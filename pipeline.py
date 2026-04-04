@@ -106,9 +106,13 @@ def grabcut_neutrophil(frame_bgr, enhanced, neutro_seeds, bg_seeds, rbc_seeds,
     neutro_seeds: list of (x, y) → definite foreground
     bg_seeds:     list of (x, y) → definite background
     rbc_seeds:    list of (x, y) → probable background
-    Returns binary mask (255=neutrophil).
+    Returns binary mask (255=neutrophil) — single largest component only.
     """
     h, w = enhanced.shape
+
+    if not neutro_seeds:
+        return np.zeros((h, w), dtype=np.uint8)
+
     gc_mask = np.full((h, w), cv2.GC_PR_BGD, dtype=np.uint8)
 
     # Bright pixels → definite background
@@ -122,9 +126,6 @@ def grabcut_neutrophil(frame_bgr, enhanced, neutro_seeds, bg_seeds, rbc_seeds,
     for (x, y) in rbc_seeds:
         cv2.circle(gc_mask, (int(x), int(y)), seed_r, cv2.GC_PR_BGD, -1)
 
-    if not neutro_seeds:
-        return np.zeros((h, w), dtype=np.uint8)
-
     bgd_model = np.zeros((1, 65), np.float64)
     fgd_model = np.zeros((1, 65), np.float64)
     try:
@@ -133,15 +134,27 @@ def grabcut_neutrophil(frame_bgr, enhanced, neutro_seeds, bg_seeds, rbc_seeds,
     except Exception:
         return np.zeros((h, w), dtype=np.uint8)
 
-    mask = np.where(
+    raw = np.where(
         (gc_mask == cv2.GC_FGD) | (gc_mask == cv2.GC_PR_FGD), 255, 0
     ).astype(np.uint8)
 
-    # Post-process: fill holes, remove small blobs
-    mask = ndimage.binary_fill_holes(mask).astype(np.uint8) * 255
-    k5 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, k5)
+    # ── Keep only the single largest connected component ──────────────────────
+    # The neutrophil is always one continuous region. Fragments on RBCs are noise.
+    n_comp, comp_labels, stats, _ = cv2.connectedComponentsWithStats(raw)
+    if n_comp <= 1:
+        return np.zeros((h, w), dtype=np.uint8)
 
+    largest_lbl = int(np.argmax(stats[1:, cv2.CC_STAT_AREA])) + 1
+    largest_area = stats[largest_lbl, cv2.CC_STAT_AREA]
+
+    # Must be at least 500px — smaller than this is just leaked fragments
+    if largest_area < 500:
+        return np.zeros((h, w), dtype=np.uint8)
+
+    mask = ((comp_labels == largest_lbl) * 255).astype(np.uint8)
+
+    # Fill internal holes
+    mask = ndimage.binary_fill_holes(mask).astype(np.uint8) * 255
     return mask
 
 
@@ -251,48 +264,53 @@ def neutrophil_centroid(mask):
     return int(m['m10'] / m['m00']), int(m['m01'] / m['m00'])
 
 
-def neutrophil_guided(frame_bgr, enhanced, prior_centroid, rbc_zone, h, w):
+def neutrophil_guided(frame_bgr, enhanced, prior_centroid, rbc_zone, density, h, w):
     """
     Tier 2: GrabCut seeded at the predicted neutrophil position.
-    prior_centroid: (cx, cy) from the nearest corrected frame.
+    Uses tight FG seeds near the centroid and dense RBC-zone BG seeds.
     """
     cx, cy = prior_centroid
     cx = int(np.clip(cx, 0, w - 1))
     cy = int(np.clip(cy, 0, h - 1))
 
-    # FG seeds: disc around predicted centroid (radius ~1 RBC)
+    # FG seeds: a small 3×3 grid of points very close to centroid
     neutro_seeds = []
-    r = 22
-    for dx in range(-r, r+1, 8):
-        for dy in range(-r, r+1, 8):
-            if dx*dx + dy*dy <= r*r:
-                nx, ny = cx+dx, cy+dy
-                if 0 <= nx < w and 0 <= ny < h:
-                    neutro_seeds.append((nx, ny))
+    for dx in range(-6, 7, 6):
+        for dy in range(-6, 7, 6):
+            nx, ny = cx + dx, cy + dy
+            if 0 <= nx < w and 0 <= ny < h:
+                neutro_seeds.append((nx, ny))
 
-    # BG seeds: bright background pixels (sampled)
-    bg_ys, bg_xs = np.where(enhanced > 190)
-    if len(bg_ys) > 20:
-        idx = np.random.choice(len(bg_ys), 20, replace=False)
+    # BG seeds: sample from (a) bright background, (b) known RBC zone
+    bg_ys, bg_xs = np.where(enhanced > 185)
+    if len(bg_ys) > 30:
+        idx = np.random.choice(len(bg_ys), 30, replace=False)
         bg_seeds = list(zip(bg_xs[idx].tolist(), bg_ys[idx].tolist()))
     else:
-        bg_seeds = []
+        bg_seeds = list(zip(bg_xs.tolist(), bg_ys.tolist()))
 
-    # RBC seeds: known RBC zone pixels (sampled)
-    rbc_ys, rbc_xs = np.where(rbc_zone > 0)
-    if len(rbc_ys) > 20:
-        idx = np.random.choice(len(rbc_ys), 20, replace=False)
+    # RBC seeds: pixels from density map (stable RBC positions)
+    rbc_ys, rbc_xs = np.where(density >= 0.20)
+    if len(rbc_ys) > 40:
+        idx = np.random.choice(len(rbc_ys), 40, replace=False)
         rbc_seeds = list(zip(rbc_xs[idx].tolist(), rbc_ys[idx].tolist()))
     else:
-        rbc_seeds = []
+        rbc_seeds = list(zip(rbc_xs.tolist(), rbc_ys.tolist()))
 
     mask = grabcut_neutrophil(frame_bgr, enhanced, neutro_seeds, bg_seeds, rbc_seeds)
 
-    # Sanity check: result must overlap predicted position
+    # Sanity check: result must contain the predicted centroid
     if mask[cy, cx] == 0:
-        # GrabCut drifted — fall back to a simple disc at the predicted position
-        mask = np.zeros((h, w), np.uint8)
-        cv2.circle(mask, (cx, cy), 28, 255, -1)
+        # If GrabCut drifted, try with larger FG seeds
+        neutro_seeds_wide = [(cx + dx, cy + dy)
+                             for dx in range(-12, 13, 6)
+                             for dy in range(-12, 13, 6)
+                             if 0 <= cx+dx < w and 0 <= cy+dy < h]
+        mask = grabcut_neutrophil(frame_bgr, enhanced, neutro_seeds_wide, bg_seeds, rbc_seeds)
+        if mask[cy, cx] == 0:
+            # Hard fallback: tight disc only
+            mask = np.zeros((h, w), np.uint8)
+            cv2.circle(mask, (cx, cy), 20, 255, -1)
 
     return mask
 
@@ -421,6 +439,32 @@ def draw_legend(frame, tier=None, stage_jump=False):
     return frame
 
 
+# ─── Centroid interpolation ────────────────────────────────────────────────────
+
+def _interpolate_centroid(centroids, known_frames, frame_idx):
+    """
+    Linearly interpolate / extrapolate the neutrophil centroid for frame_idx
+    given a dict of known {frame: (cx,cy)} entries.
+    """
+    if frame_idx in centroids:
+        return centroids[frame_idx]
+
+    # Find bracketing frames
+    before = [f for f in known_frames if f < frame_idx]
+    after  = [f for f in known_frames if f > frame_idx]
+
+    if before and after:
+        f0, f1 = max(before), min(after)
+        t  = (frame_idx - f0) / (f1 - f0)
+        x0, y0 = centroids[f0]
+        x1, y1 = centroids[f1]
+        return (int(x0 + t * (x1 - x0)), int(y0 + t * (y1 - y0)))
+    elif before:
+        return centroids[max(before)]   # extrapolate = hold last
+    else:
+        return centroids[min(after)]    # extrapolate = hold first
+
+
 # ─── Main ──────────────────────────────────────────────────────────────────────
 
 def main():
@@ -473,7 +517,22 @@ def main():
     motion_buf   = MotionBuffer(lag=MOTION_LAG)
     out_frames   = []
     prev_gray    = None
-    neutro_centroids = {}   # frame_idx → (cx, cy) for Tier-2 propagation
+
+    # Pre-compute neutrophil centroid for every annotated frame directly from
+    # correction points — these are ground-truth positions used by Tier 2.
+    neutro_centroids = {}   # frame_idx → (cx, cy)
+    annotated_frames = sorted(set(c['frame'] for c in corrections
+                                  if c['label'] == 'neutrophil'))
+    for af in annotated_frames:
+        pts = [(c['x'], c['y']) for c in corrections
+               if c['frame'] == af and c['label'] == 'neutrophil']
+        if pts:
+            cx = int(np.mean([p[0] for p in pts]))
+            cy = int(np.mean([p[1] for p in pts]))
+            neutro_centroids[af] = (cx, cy)
+    if neutro_centroids:
+        print(f"  Neutrophil centroids pre-computed for frames: "
+              f"{sorted(neutro_centroids.keys())}")
 
     print("Processing…")
     for i in tqdm(range(n_frames), unit="frame"):
@@ -508,38 +567,23 @@ def main():
             tier = 1
 
         else:
-            # Look for nearest correction frame within window
-            nearby = corrections_for_frame(corrections, i, window=CORRECTION_WINDOW)
-            nearby_neutro = [c for c in nearby if c['label'] == 'neutrophil']
-
-            if nearby_neutro:
-                # Tier 2: guided by nearest known centroid
-                ref_result = nearest_correction_frame(corrections, i)
-                if ref_result:
-                    _, ref_frame = ref_result
-                    if ref_frame in neutro_centroids:
-                        prior = neutro_centroids[ref_frame]
-                        neutro_mask = neutrophil_guided(frame_bgr, enh, prior, rbc_zone, h, w)
-                        tier = 2
-                    else:
-                        # Fallback: seed from the nearby correction points directly
-                        neutro_seeds = [(c['x'], c['y']) for c in nearby_neutro]
-                        bg_seeds     = [(c['x'], c['y']) for c in nearby if c['label']=='background']
-                        rbc_seeds_pt = [(c['x'], c['y']) for c in nearby if c['label']=='rbc']
-                        neutro_mask  = grabcut_neutrophil(frame_bgr, enh, neutro_seeds, bg_seeds, rbc_seeds_pt)
-                        tier = 2
-                else:
-                    neutro_mask = neutrophil_motion(gray, enh, motion_diff, rbc_zone, args.rbc_radius, h, w)
-                    tier = 3
+            # Find nearest annotated centroid (can be any distance — no window limit)
+            if neutro_centroids:
+                # Interpolate centroid between bracketing known frames
+                known_frames = sorted(neutro_centroids.keys())
+                prior = _interpolate_centroid(neutro_centroids, known_frames, i)
+                neutro_mask = neutrophil_guided(frame_bgr, enh, prior, rbc_zone, density, h, w)
+                tier = 2
             else:
-                # Tier 3: motion only
+                # Tier 3: motion only (no corrections available)
                 neutro_mask = neutrophil_motion(gray, enh, motion_diff, rbc_zone, args.rbc_radius, h, w)
                 tier = 3
 
-        # Store centroid for Tier-2 propagation
-        c = neutrophil_centroid(neutro_mask)
-        if c:
-            neutro_centroids[i] = c
+        # Update centroid from Tier-1 output (most reliable)
+        if tier == 1:
+            c = neutrophil_centroid(neutro_mask)
+            if c:
+                neutro_centroids[i] = c
 
         # Apply rbc/background corrections (disc-based, direct override)
         all_corrs = corrections_for_frame(corrections, i, window=CORRECTION_WINDOW)
