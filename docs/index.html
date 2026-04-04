@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cell Slicer — Analysis Viewer</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f0f12;
+      color: #e0e0e0;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    header {
+      max-width: 960px;
+      margin: 0 auto 2.5rem;
+    }
+
+    header h1 {
+      font-size: 1.7rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: #fff;
+    }
+
+    header p {
+      margin-top: 0.5rem;
+      color: #888;
+      font-size: 0.95rem;
+      max-width: 600px;
+      line-height: 1.5;
+    }
+
+    .legend {
+      display: flex;
+      gap: 1.4rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.85rem;
+      color: #bbb;
+    }
+
+    .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .swatch.green  { background: #28dc28; }
+    .swatch.yellow { background: #dcdc00; }
+    .swatch.red    { background: #dc3c3c; }
+
+    .viewer {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .videos {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 680px) {
+      .videos { grid-template-columns: 1fr; }
+    }
+
+    .video-card {
+      background: #18181f;
+      border: 1px solid #2a2a35;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .video-card video {
+      width: 100%;
+      display: block;
+      background: #000;
+    }
+
+    .video-card .label {
+      padding: 0.65rem 0.9rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      color: #666;
+      border-top: 1px solid #2a2a35;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0.6rem 0.9rem;
+      border-top: 1px solid #2a2a35;
+      flex-wrap: wrap;
+    }
+
+    .controls button {
+      background: #2a2a35;
+      border: 1px solid #3a3a48;
+      border-radius: 5px;
+      color: #ccc;
+      padding: 0.3rem 0.75rem;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .controls button:hover { background: #3a3a4a; }
+    .controls button.active { background: #3a5a8a; border-color: #5a8acc; color: #aaccff; }
+
+    .sync-note {
+      font-size: 0.75rem;
+      color: #555;
+      margin-left: auto;
+    }
+
+    .notes {
+      max-width: 960px;
+      margin: 2rem auto 0;
+      background: #18181f;
+      border: 1px solid #2a2a35;
+      border-radius: 10px;
+      padding: 1.2rem 1.4rem;
+    }
+
+    .notes h2 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.8rem;
+    }
+
+    .notes ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .notes li {
+      font-size: 0.85rem;
+      color: #888;
+      line-height: 1.5;
+      padding-left: 1.1rem;
+      position: relative;
+    }
+
+    .notes li::before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: #444;
+    }
+
+    footer {
+      max-width: 960px;
+      margin: 2rem auto 0;
+      font-size: 0.75rem;
+      color: #444;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🔬 Cell Slicer — Analysis Viewer</h1>
+    <p>Automated segmentation of neutrophil, microbe, and red blood cells in brightfield microscopy video.</p>
+    <div class="legend">
+      <span class="legend-item"><span class="swatch green"></span> Neutrophil</span>
+      <span class="legend-item"><span class="swatch yellow"></span> Microbe</span>
+      <span class="legend-item"><span class="swatch red"></span> Red Blood Cells</span>
+    </div>
+  </header>
+
+  <div class="viewer">
+    <div class="videos">
+
+      <div class="video-card">
+        <video id="vid-original" src="chase-original.mp4" loop muted playsinline preload="metadata"></video>
+        <div class="label">Original</div>
+        <div class="controls">
+          <button id="btn-play-original" onclick="togglePlay('original')">▶ Play</button>
+          <button onclick="stepFrame('original', -1)">← Frame</button>
+          <button onclick="stepFrame('original', 1)">Frame →</button>
+          <span class="sync-note">scroll to scrub</span>
+        </div>
+      </div>
+
+      <div class="video-card">
+        <video id="vid-segmented" src="chase-segmented.mp4" loop muted playsinline preload="metadata"></video>
+        <div class="label">Segmented</div>
+        <div class="controls">
+          <button id="btn-play-segmented" onclick="togglePlay('segmented')">▶ Play</button>
+          <button onclick="stepFrame('segmented', -1)">← Frame</button>
+          <button onclick="stepFrame('segmented', 1)">Frame →</button>
+          <span class="sync-note" id="sync-label">sync: off</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="margin-top:1rem; display:flex; gap:0.7rem; align-items:center;">
+      <button id="btn-sync" onclick="toggleSync()" style="background:#2a2a35; border:1px solid #3a3a48; border-radius:5px; color:#ccc; padding:0.35rem 0.9rem; font-size:0.82rem; cursor:pointer;">
+        Sync videos
+      </button>
+      <button onclick="playBoth()" style="background:#2a2a35; border:1px solid #3a3a48; border-radius:5px; color:#ccc; padding:0.35rem 0.9rem; font-size:0.82rem; cursor:pointer;">
+        ▶ Play both
+      </button>
+      <button onclick="pauseBoth()" style="background:#2a2a35; border:1px solid #3a3a48; border-radius:5px; color:#ccc; padding:0.35rem 0.9rem; font-size:0.82rem; cursor:pointer;">
+        ⏸ Pause both
+      </button>
+      <label style="font-size:0.82rem; color:#666; display:flex; align-items:center; gap:0.4rem; margin-left:auto;">
+        Speed
+        <select id="speed" onchange="setSpeed(this.value)" style="background:#2a2a35; border:1px solid #3a3a48; border-radius:4px; color:#ccc; padding:0.2rem 0.4rem; font-size:0.78rem;">
+          <option value="0.25">0.25×</option>
+          <option value="0.5">0.5×</option>
+          <option value="1" selected>1×</option>
+          <option value="2">2×</option>
+        </select>
+      </label>
+    </div>
+  </div>
+
+  <div class="notes">
+    <h2>Pipeline notes</h2>
+    <ul>
+      <li>RBCs detected via Hough Circle Transform (diameter ≈ 37px). Some edge/overlapping cells may be missed.</li>
+      <li>Neutrophil = largest foreground blob from rolling median background subtraction (25-frame window).</li>
+      <li>Microbe detected as very small dark blobs outside known cell regions. May include false positives on debris.</li>
+      <li>Frames with large inter-frame differences (stage moves) are marked "STAGE MOVE" and skipped.</li>
+      <li>Pure OpenCV pipeline — CPU only, ~18fps throughput, no GPU required.</li>
+    </ul>
+  </div>
+
+  <footer>cell-slicer · ewintermute/cell-slicer · generated 2026-04-04</footer>
+
+  <script>
+    const FPS = 15;
+    let synced = false;
+
+    function vid(name) { return document.getElementById('vid-' + name); }
+
+    function togglePlay(name) {
+      const v = vid(name);
+      const btn = document.getElementById('btn-play-' + name);
+      if (v.paused) { v.play(); btn.textContent = '⏸ Pause'; }
+      else          { v.pause(); btn.textContent = '▶ Play'; }
+    }
+
+    function stepFrame(name, dir) {
+      const v = vid(name);
+      v.pause();
+      v.currentTime = Math.max(0, Math.min(v.duration, v.currentTime + dir / FPS));
+      document.getElementById('btn-play-' + name).textContent = '▶ Play';
+    }
+
+    function playBoth() {
+      ['original','segmented'].forEach(n => {
+        vid(n).play();
+        document.getElementById('btn-play-' + n).textContent = '⏸ Pause';
+      });
+    }
+
+    function pauseBoth() {
+      ['original','segmented'].forEach(n => {
+        vid(n).pause();
+        document.getElementById('btn-play-' + n).textContent = '▶ Play';
+      });
+    }
+
+    function setSpeed(v) {
+      ['original','segmented'].forEach(n => { vid(n).playbackRate = parseFloat(v); });
+    }
+
+    // Scrub on scroll over each video
+    ['original','segmented'].forEach(name => {
+      vid(name).addEventListener('wheel', e => {
+        e.preventDefault();
+        const v = vid(name);
+        v.pause();
+        v.currentTime = Math.max(0, Math.min(v.duration, v.currentTime + (e.deltaY > 0 ? 1 : -1) / FPS));
+        document.getElementById('btn-play-' + name).textContent = '▶ Play';
+        if (synced) {
+          const other = name === 'original' ? 'segmented' : 'original';
+          vid(other).currentTime = v.currentTime;
+        }
+      }, { passive: false });
+    });
+
+    // Sync: keep segmented in lock-step with original
+    let syncInterval = null;
+    function toggleSync() {
+      synced = !synced;
+      document.getElementById('sync-label').textContent = 'sync: ' + (synced ? 'on' : 'off');
+      document.getElementById('btn-sync').style.background = synced ? '#3a5a8a' : '#2a2a35';
+      document.getElementById('btn-sync').style.color = synced ? '#aaccff' : '#ccc';
+
+      if (synced) {
+        // Align times on enable
+        vid('segmented').currentTime = vid('original').currentTime;
+        syncInterval = setInterval(() => {
+          if (!vid('original').paused) {
+            vid('segmented').currentTime = vid('original').currentTime;
+          }
+        }, 250);
+      } else {
+        if (syncInterval) { clearInterval(syncInterval); syncInterval = null; }
+      }
+    }
+  </script>
+
+</body>
+</html>
