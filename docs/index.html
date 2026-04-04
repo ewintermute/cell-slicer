@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cell Slicer — Analysis Viewer</title>
+  <title>Cell Slicer — Annotation Viewer</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -12,69 +12,34 @@
       background: #0f0f12;
       color: #e0e0e0;
       min-height: 100vh;
-      padding: 2rem 1rem;
+      padding: 1.5rem 1rem 3rem;
     }
 
     header {
-      max-width: 960px;
-      margin: 0 auto 2.5rem;
+      max-width: 1000px;
+      margin: 0 auto 1.5rem;
     }
-
-    header h1 {
-      font-size: 1.7rem;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      color: #fff;
-    }
-
-    header p {
-      margin-top: 0.5rem;
-      color: #888;
-      font-size: 0.95rem;
-      max-width: 600px;
-      line-height: 1.5;
-    }
+    header h1 { font-size: 1.4rem; font-weight: 700; color: #fff; }
+    header p  { margin-top: 0.3rem; color: #777; font-size: 0.85rem; }
 
     .legend {
-      display: flex;
-      gap: 1.4rem;
-      margin-top: 1rem;
-      flex-wrap: wrap;
+      display: flex; gap: 1.2rem; margin-top: 0.6rem; flex-wrap: wrap;
     }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
-      font-size: 0.85rem;
-      color: #bbb;
-    }
-
-    .swatch {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
+    .legend-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; color: #aaa; }
+    .swatch { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
     .swatch.green  { background: #28dc28; }
-    .swatch.yellow { background: #dcdc00; }
     .swatch.red    { background: #dc3c3c; }
+    .swatch.blue   { background: #4488ff; }
 
-    .viewer {
-      max-width: 960px;
-      margin: 0 auto;
-    }
+    /* ── Video grid ──────────────────────────────────────────────────── */
+    .viewer { max-width: 1000px; margin: 0 auto; }
 
     .videos {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
+      gap: 1.2rem;
     }
-
-    @media (max-width: 680px) {
-      .videos { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 680px) { .videos { grid-template-columns: 1fr; } }
 
     .video-card {
       background: #18181f;
@@ -83,248 +48,561 @@
       overflow: hidden;
     }
 
-    .video-card video {
-      width: 100%;
+    /* video + canvas stacked */
+    .vid-wrap {
+      position: relative;
       display: block;
       background: #000;
     }
+    .vid-wrap video {
+      width: 100%;
+      display: block;
+    }
+    .vid-wrap canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+    }
+    .vid-wrap canvas.erase-mode { cursor: cell; }
 
-    .video-card .label {
-      padding: 0.65rem 0.9rem;
-      font-size: 0.82rem;
+    .card-label {
+      padding: 0.5rem 0.8rem;
+      font-size: 0.75rem;
       font-weight: 600;
       letter-spacing: 0.4px;
       text-transform: uppercase;
-      color: #666;
+      color: #555;
+      border-bottom: 1px solid #2a2a35;
+    }
+    .card-foot {
+      padding: 0.5rem 0.8rem;
       border-top: 1px solid #2a2a35;
+      font-size: 0.75rem;
+      color: #555;
     }
 
-    .controls {
+    /* ── Playback controls ───────────────────────────────────────────── */
+    .playbar {
+      max-width: 1000px;
+      margin: 0.8rem auto 0;
       display: flex;
-      align-items: center;
-      gap: 0.7rem;
-      padding: 0.6rem 0.9rem;
-      border-top: 1px solid #2a2a35;
       flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
     }
-
-    .controls button {
+    .playbar button, .playbar select {
       background: #2a2a35;
       border: 1px solid #3a3a48;
       border-radius: 5px;
       color: #ccc;
-      padding: 0.3rem 0.75rem;
+      padding: 0.3rem 0.7rem;
       font-size: 0.78rem;
       cursor: pointer;
-      transition: background 0.15s;
     }
+    .playbar button:hover { background: #3a3a4a; }
+    .playbar button.active { background: #3a5a8a; border-color: #5a8acc; color: #aaccff; }
+    .playbar label { font-size: 0.78rem; color: #666; display:flex; align-items:center; gap:0.3rem; }
+    .frame-counter { margin-left: auto; font-size: 0.78rem; color: #555; font-variant-numeric: tabular-nums; }
 
-    .controls button:hover { background: #3a3a4a; }
-    .controls button.active { background: #3a5a8a; border-color: #5a8acc; color: #aaccff; }
-
-    .sync-note {
-      font-size: 0.75rem;
-      color: #555;
-      margin-left: auto;
-    }
-
-    .notes {
-      max-width: 960px;
-      margin: 2rem auto 0;
+    /* ── Annotation toolbar ──────────────────────────────────────────── */
+    .anno-bar {
+      max-width: 1000px;
+      margin: 1rem auto 0;
       background: #18181f;
       border: 1px solid #2a2a35;
       border-radius: 10px;
-      padding: 1.2rem 1.4rem;
+      padding: 0.8rem 1rem;
     }
-
-    .notes h2 {
-      font-size: 0.9rem;
+    .anno-bar h2 {
+      font-size: 0.78rem;
       font-weight: 600;
-      color: #aaa;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-bottom: 0.8rem;
+      color: #666;
+      margin-bottom: 0.6rem;
     }
-
-    .notes ul {
-      list-style: none;
+    .anno-row {
       display: flex;
-      flex-direction: column;
-      gap: 0.45rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .anno-row:last-child { margin-bottom: 0; }
+
+    .mode-btn {
+      border: 2px solid transparent;
+      border-radius: 6px;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.12s;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .mode-btn .dot {
+      width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+    }
+    #btn-mode-neutrophil {
+      background: #1a2a1a; color: #28dc28; border-color: #1f3a1f;
+    }
+    #btn-mode-neutrophil.active {
+      background: #28dc28; color: #000; border-color: #28dc28;
+    }
+    #btn-mode-rbc {
+      background: #2a1a1a; color: #dc3c3c; border-color: #3a1f1f;
+    }
+    #btn-mode-rbc.active {
+      background: #dc3c3c; color: #000; border-color: #dc3c3c;
+    }
+    #btn-mode-background {
+      background: #1a1a2a; color: #4488ff; border-color: #1f1f3a;
+    }
+    #btn-mode-background.active {
+      background: #4488ff; color: #000; border-color: #4488ff;
+    }
+    #btn-mode-erase {
+      background: #2a2a2a; color: #aaa; border-color: #3a3a3a;
+    }
+    #btn-mode-erase.active {
+      background: #555; color: #fff; border-color: #777;
     }
 
-    .notes li {
-      font-size: 0.85rem;
-      color: #888;
-      line-height: 1.5;
-      padding-left: 1.1rem;
-      position: relative;
+    .tool-btn {
+      background: #2a2a35;
+      border: 1px solid #3a3a48;
+      border-radius: 5px;
+      color: #ccc;
+      padding: 0.3rem 0.7rem;
+      font-size: 0.78rem;
+      cursor: pointer;
     }
+    .tool-btn:hover { background: #3a3a4a; }
+    .tool-btn.danger { color: #e05555; }
+    .tool-btn.danger:hover { background: #3a1a1a; }
 
-    .notes li::before {
-      content: "→";
-      position: absolute;
-      left: 0;
-      color: #444;
+    .file-label {
+      background: #2a2a35;
+      border: 1px solid #3a3a48;
+      border-radius: 5px;
+      color: #ccc;
+      padding: 0.3rem 0.7rem;
+      font-size: 0.78rem;
+      cursor: pointer;
     }
+    .file-label:hover { background: #3a3a4a; }
+    .file-label input { display: none; }
 
-    footer {
-      max-width: 960px;
-      margin: 2rem auto 0;
+    .anno-hint {
       font-size: 0.75rem;
       color: #444;
-      text-align: center;
+      font-style: italic;
     }
+
+    /* ── Stats ───────────────────────────────────────────────────────── */
+    .stats-bar {
+      max-width: 1000px;
+      margin: 0.6rem auto 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: center;
+      font-size: 0.78rem;
+      color: #555;
+    }
+    .stat-pill {
+      display: flex; align-items: center; gap: 0.35rem;
+    }
+    .stat-pill .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+    }
+    #frame-markers-list {
+      max-width: 1000px;
+      margin: 0.4rem auto 0;
+      font-size: 0.72rem;
+      color: #444;
+      min-height: 1.2em;
+    }
+
+    /* ── Notes ───────────────────────────────────────────────────────── */
+    .notes {
+      max-width: 1000px;
+      margin: 1.2rem auto 0;
+      background: #18181f;
+      border: 1px solid #2a2a35;
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+    }
+    .notes h2 {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.7rem;
+    }
+    .notes ul { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; }
+    .notes li { font-size: 0.82rem; color: #777; line-height: 1.5; padding-left: 1rem; position: relative; }
+    .notes li::before { content: "→"; position: absolute; left: 0; color: #444; }
+    code { background: #2a2a35; padding: 0.1em 0.4em; border-radius: 3px; font-size: 0.85em; color: #aaccff; }
+
+    footer { max-width: 1000px; margin: 1.5rem auto 0; font-size: 0.72rem; color: #333; text-align: center; }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>🔬 Cell Slicer — Analysis Viewer</h1>
-    <p>Automated segmentation of neutrophil, microbe, and red blood cells in brightfield microscopy video.</p>
-    <div class="legend">
-      <span class="legend-item"><span class="swatch green"></span> Neutrophil</span>
-      <span class="legend-item"><span class="swatch yellow"></span> Microbe</span>
-      <span class="legend-item"><span class="swatch red"></span> Red Blood Cells</span>
-    </div>
-  </header>
+<header>
+  <h1>🔬 Cell Slicer — Annotation Viewer</h1>
+  <p>Click on the <strong>Original</strong> video to annotate. Use the toolbar to choose the label. Export JSON → re-run pipeline.</p>
+  <div class="legend">
+    <span class="legend-item"><span class="swatch green"></span> Neutrophil</span>
+    <span class="legend-item"><span class="swatch red"></span> RBC</span>
+    <span class="legend-item"><span class="swatch blue"></span> Neither / background</span>
+  </div>
+</header>
 
-  <div class="viewer">
-    <div class="videos">
+<div class="viewer">
 
-      <div class="video-card">
+  <div class="videos">
+
+    <!-- Original + annotation canvas -->
+    <div class="video-card">
+      <div class="card-label">Original — click to annotate</div>
+      <div class="vid-wrap">
         <video id="vid-original" src="chase-original.mp4" loop muted playsinline preload="metadata"></video>
-        <div class="label">Original</div>
-        <div class="controls">
-          <button id="btn-play-original" onclick="togglePlay('original')">▶ Play</button>
-          <button onclick="stepFrame('original', -1)">← Frame</button>
-          <button onclick="stepFrame('original', 1)">Frame →</button>
-          <span class="sync-note">scroll to scrub</span>
-        </div>
+        <canvas id="anno-canvas" width="320" height="240"></canvas>
       </div>
-
-      <div class="video-card">
-        <video id="vid-segmented" src="chase-segmented.mp4" loop muted playsinline preload="metadata"></video>
-        <div class="label">Segmented</div>
-        <div class="controls">
-          <button id="btn-play-segmented" onclick="togglePlay('segmented')">▶ Play</button>
-          <button onclick="stepFrame('segmented', -1)">← Frame</button>
-          <button onclick="stepFrame('segmented', 1)">Frame →</button>
-          <span class="sync-note" id="sync-label">sync: off</span>
-        </div>
-      </div>
-
+      <div class="card-foot" id="orig-foot">frame 0</div>
     </div>
 
-    <div style="margin-top:1rem; display:flex; gap:0.7rem; align-items:center;">
-      <button id="btn-sync" onclick="toggleSync()" style="background:#2a2a35; border:1px solid #3a3a48; border-radius:5px; color:#ccc; padding:0.35rem 0.9rem; font-size:0.82rem; cursor:pointer;">
-        Sync videos
+    <!-- Segmented output -->
+    <div class="video-card">
+      <div class="card-label">Segmented — pipeline output</div>
+      <div class="vid-wrap">
+        <video id="vid-segmented" src="chase-segmented.mp4" loop muted playsinline preload="metadata"></video>
+      </div>
+      <div class="card-foot">scroll to scrub &nbsp;·&nbsp; <span id="sync-state">sync off</span></div>
+    </div>
+
+  </div>
+
+  <!-- Playback controls -->
+  <div class="playbar">
+    <button onclick="playBoth()">▶ Play</button>
+    <button onclick="pauseBoth()">⏸ Pause</button>
+    <button onclick="stepFrame(-1)">← Frame</button>
+    <button onclick="stepFrame(1)">Frame →</button>
+    <label>Speed
+      <select onchange="setSpeed(this.value)">
+        <option value="0.25">0.25×</option>
+        <option value="0.5">0.5×</option>
+        <option value="1" selected>1×</option>
+        <option value="2">2×</option>
+      </select>
+    </label>
+    <button id="btn-sync" onclick="toggleSync()">Sync videos</button>
+    <span class="frame-counter">frame <span id="fc">0</span> / <span id="fc-total">–</span></span>
+  </div>
+
+  <!-- Annotation toolbar -->
+  <div class="anno-bar">
+    <h2>Annotate</h2>
+    <div class="anno-row">
+      <button class="mode-btn active" id="btn-mode-neutrophil" onclick="setMode('neutrophil')">
+        <span class="dot" style="background:#28dc28"></span>Neutrophil
       </button>
-      <button onclick="playBoth()" style="background:#2a2a35; border:1px solid #3a3a48; border-radius:5px; color:#ccc; padding:0.35rem 0.9rem; font-size:0.82rem; cursor:pointer;">
-        ▶ Play both
+      <button class="mode-btn" id="btn-mode-rbc" onclick="setMode('rbc')">
+        <span class="dot" style="background:#dc3c3c"></span>RBC
       </button>
-      <button onclick="pauseBoth()" style="background:#2a2a35; border:1px solid #3a3a48; border-radius:5px; color:#ccc; padding:0.35rem 0.9rem; font-size:0.82rem; cursor:pointer;">
-        ⏸ Pause both
+      <button class="mode-btn" id="btn-mode-background" onclick="setMode('background')">
+        <span class="dot" style="background:#4488ff"></span>Neither
       </button>
-      <label style="font-size:0.82rem; color:#666; display:flex; align-items:center; gap:0.4rem; margin-left:auto;">
-        Speed
-        <select id="speed" onchange="setSpeed(this.value)" style="background:#2a2a35; border:1px solid #3a3a48; border-radius:4px; color:#ccc; padding:0.2rem 0.4rem; font-size:0.78rem;">
-          <option value="0.25">0.25×</option>
-          <option value="0.5">0.5×</option>
-          <option value="1" selected>1×</option>
-          <option value="2">2×</option>
-        </select>
+      <button class="mode-btn" id="btn-mode-erase" onclick="setMode('erase')">✕ Erase nearby</button>
+      <span class="anno-hint">Click on the original video frame to place a correction point.</span>
+    </div>
+    <div class="anno-row">
+      <button class="tool-btn" onclick="exportMarkers()">⬇ Export corrections.json</button>
+      <label class="file-label">⬆ Import corrections.json
+        <input type="file" accept=".json" onchange="importMarkers(this)">
       </label>
+      <button class="tool-btn danger" onclick="clearAllMarkers()">🗑 Clear all</button>
     </div>
   </div>
 
+  <!-- Stats -->
+  <div class="stats-bar" id="stats-bar">
+    <span class="stat-pill"><span class="dot" style="background:#28dc28"></span><span id="count-neutrophil">0</span> neutrophil</span>
+    <span class="stat-pill"><span class="dot" style="background:#dc3c3c"></span><span id="count-rbc">0</span> rbc</span>
+    <span class="stat-pill"><span class="dot" style="background:#4488ff"></span><span id="count-background">0</span> neither</span>
+    <span style="color:#333">·</span>
+    <span id="count-frames">0 frames annotated</span>
+  </div>
+  <div id="frame-markers-list"></div>
+
+  <!-- Notes -->
   <div class="notes">
-    <h2>Pipeline notes</h2>
+    <h2>How to use</h2>
     <ul>
-      <li>RBCs detected via Hough Circle Transform (diameter ≈ 37px). Some edge/overlapping cells may be missed.</li>
-      <li>Neutrophil = largest foreground blob from rolling median background subtraction (25-frame window).</li>
-      <li>Microbe detected as very small dark blobs outside known cell regions. May include false positives on debris.</li>
-      <li>Frames with large inter-frame differences (stage moves) are marked "STAGE MOVE" and skipped.</li>
-      <li>Pure OpenCV pipeline — CPU only, ~18fps throughput, no GPU required.</li>
+      <li>Scrub to a frame where the segmentation is wrong. Pause. Click on the cell to place a correction point.</li>
+      <li><strong style="color:#28dc28">Neutrophil</strong> — click inside the cell body that IS the neutrophil.</li>
+      <li><strong style="color:#dc3c3c">RBC</strong> — click inside a cell that should be an RBC but isn't (or is being labelled wrong).</li>
+      <li><strong style="color:#4488ff">Neither</strong> — click on a region that is being wrongly labelled as a cell (background / debris).</li>
+      <li>Export <code>corrections.json</code> → place it in the <code>output/</code> folder → re-run: <code>python3 pipeline.py --corrections output/corrections.json</code></li>
+      <li>Markers are saved in browser localStorage automatically. Import/Export to persist across sessions.</li>
+      <li>Annotating ~10–20 frames spread across the video gives good coverage. Focus on frames where the neutrophil identity is ambiguous.</li>
     </ul>
   </div>
 
-  <footer>cell-slicer · ewintermute/cell-slicer · generated 2026-04-04</footer>
+</div>
 
-  <script>
-    const FPS = 15;
-    let synced = false;
+<footer>cell-slicer · ewintermute/cell-slicer</footer>
 
-    function vid(name) { return document.getElementById('vid-' + name); }
+<script>
+  // ── Config ──────────────────────────────────────────────────────────────────
+  const FPS    = 15;
+  const VID_W  = 320;
+  const VID_H  = 240;
+  const ERASE_RADIUS = 14; // px in video coords
 
-    function togglePlay(name) {
-      const v = vid(name);
-      const btn = document.getElementById('btn-play-' + name);
-      if (v.paused) { v.play(); btn.textContent = '⏸ Pause'; }
-      else          { v.pause(); btn.textContent = '▶ Play'; }
-    }
+  const COLOURS = {
+    neutrophil: '#28dc28',
+    rbc:        '#dc3c3c',
+    background: '#4488ff',
+  };
+  const FILL_ALPHA   = 0.75;
+  const FRAME_FADE   = 3; // show markers within ±N frames, fading
 
-    function stepFrame(name, dir) {
-      const v = vid(name);
-      v.pause();
-      v.currentTime = Math.max(0, Math.min(v.duration, v.currentTime + dir / FPS));
-      document.getElementById('btn-play-' + name).textContent = '▶ Play';
-    }
+  // ── State ───────────────────────────────────────────────────────────────────
+  let markers = [];
+  let mode    = 'neutrophil';
+  let synced  = false;
+  let syncInt = null;
 
-    function playBoth() {
-      ['original','segmented'].forEach(n => {
-        vid(n).play();
-        document.getElementById('btn-play-' + n).textContent = '⏸ Pause';
-      });
-    }
+  const orig = document.getElementById('vid-original');
+  const seg  = document.getElementById('vid-segmented');
+  const canvas = document.getElementById('anno-canvas');
+  const ctx    = canvas.getContext('2d');
 
-    function pauseBoth() {
-      ['original','segmented'].forEach(n => {
-        vid(n).pause();
-        document.getElementById('btn-play-' + n).textContent = '▶ Play';
-      });
-    }
+  // ── Persistence ─────────────────────────────────────────────────────────────
+  function loadFromStorage() {
+    try { markers = JSON.parse(localStorage.getItem('cellslicer-markers') || '[]'); }
+    catch(e) { markers = []; }
+  }
+  function saveToStorage() {
+    localStorage.setItem('cellslicer-markers', JSON.stringify(markers));
+  }
 
-    function setSpeed(v) {
-      ['original','segmented'].forEach(n => { vid(n).playbackRate = parseFloat(v); });
-    }
+  loadFromStorage();
 
-    // Scrub on scroll over each video
-    ['original','segmented'].forEach(name => {
-      vid(name).addEventListener('wheel', e => {
-        e.preventDefault();
-        const v = vid(name);
-        v.pause();
-        v.currentTime = Math.max(0, Math.min(v.duration, v.currentTime + (e.deltaY > 0 ? 1 : -1) / FPS));
-        document.getElementById('btn-play-' + name).textContent = '▶ Play';
-        if (synced) {
-          const other = name === 'original' ? 'segmented' : 'original';
-          vid(other).currentTime = v.currentTime;
-        }
-      }, { passive: false });
+  // ── Mode ────────────────────────────────────────────────────────────────────
+  function setMode(m) {
+    mode = m;
+    ['neutrophil','rbc','background','erase'].forEach(k => {
+      document.getElementById('btn-mode-' + k).classList.toggle('active', k === m);
     });
+    canvas.classList.toggle('erase-mode', m === 'erase');
+  }
 
-    // Sync: keep segmented in lock-step with original
-    let syncInterval = null;
-    function toggleSync() {
-      synced = !synced;
-      document.getElementById('sync-label').textContent = 'sync: ' + (synced ? 'on' : 'off');
-      document.getElementById('btn-sync').style.background = synced ? '#3a5a8a' : '#2a2a35';
-      document.getElementById('btn-sync').style.color = synced ? '#aaccff' : '#ccc';
+  // ── Frame helpers ────────────────────────────────────────────────────────────
+  function getFrame()  { return Math.round(orig.currentTime * FPS); }
+  function stepFrame(dir) {
+    pauseBoth();
+    orig.currentTime = Math.max(0, Math.min(orig.duration || 0, orig.currentTime + dir / FPS));
+    if (synced) seg.currentTime = orig.currentTime;
+  }
 
-      if (synced) {
-        // Align times on enable
-        vid('segmented').currentTime = vid('original').currentTime;
-        syncInterval = setInterval(() => {
-          if (!vid('original').paused) {
-            vid('segmented').currentTime = vid('original').currentTime;
-          }
-        }, 250);
-      } else {
-        if (syncInterval) { clearInterval(syncInterval); syncInterval = null; }
-      }
+  // ── Marker ops ───────────────────────────────────────────────────────────────
+  function addOrErase(frame, vx, vy) {
+    if (mode === 'erase') {
+      markers = markers.filter(m =>
+        !(m.frame === frame && Math.hypot(m.x - vx, m.y - vy) <= ERASE_RADIUS)
+      );
+    } else {
+      // Remove any very close marker at the same frame
+      markers = markers.filter(m =>
+        !(m.frame === frame && Math.hypot(m.x - vx, m.y - vy) <= ERASE_RADIUS)
+      );
+      markers.push({ frame, x: vx, y: vy, label: mode });
     }
-  </script>
+    saveToStorage();
+    updateStats();
+  }
+
+  function clearAllMarkers() {
+    if (!confirm('Clear all annotation markers?')) return;
+    markers = [];
+    saveToStorage();
+    updateStats();
+  }
+
+  // ── Canvas click / right-click ────────────────────────────────────────────────
+  canvas.addEventListener('click', e => {
+    e.preventDefault();
+    const r   = canvas.getBoundingClientRect();
+    const vx  = Math.round((e.clientX - r.left) / r.width  * VID_W);
+    const vy  = Math.round((e.clientY - r.top)  / r.height * VID_H);
+    pauseBoth();
+    addOrErase(getFrame(), vx, vy);
+  });
+
+  canvas.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    const r  = canvas.getBoundingClientRect();
+    const vx = Math.round((e.clientX - r.left) / r.width  * VID_W);
+    const vy = Math.round((e.clientY - r.top)  / r.height * VID_H);
+    pauseBoth();
+    const frame = getFrame();
+    markers = markers.filter(m =>
+      !(m.frame === frame && Math.hypot(m.x - vx, m.y - vy) <= ERASE_RADIUS)
+    );
+    saveToStorage();
+    updateStats();
+  });
+
+  // ── Draw loop ────────────────────────────────────────────────────────────────
+  function drawFrame() {
+    ctx.clearRect(0, 0, VID_W, VID_H);
+    const f = getFrame();
+
+    for (const m of markers) {
+      const delta = Math.abs(m.frame - f);
+      if (delta > FRAME_FADE) continue;
+
+      const alpha = FILL_ALPHA * (1 - delta / (FRAME_FADE + 1));
+      const col   = COLOURS[m.label] || '#fff';
+
+      // Filled dot
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle   = col;
+      ctx.beginPath();
+      ctx.arc(m.x, m.y, 7, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Border
+      ctx.globalAlpha = alpha * 1.3;
+      ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+      ctx.lineWidth   = 1.5;
+      ctx.stroke();
+
+      // Letter label
+      ctx.globalAlpha = alpha * 1.5;
+      ctx.fillStyle   = (m.label === 'background') ? '#fff' : '#000';
+      ctx.font        = 'bold 7px sans-serif';
+      ctx.textAlign   = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(m.label === 'background' ? 'B' : m.label[0].toUpperCase(), m.x, m.y);
+    }
+    ctx.globalAlpha = 1;
+
+    // Update frame counter
+    document.getElementById('fc').textContent = f;
+    document.getElementById('orig-foot').textContent = `frame ${f}`;
+    if (orig.duration) {
+      document.getElementById('fc-total').textContent = Math.round(orig.duration * FPS);
+    }
+
+    // Frame-specific marker list
+    const here = markers.filter(m => m.frame === f);
+    document.getElementById('frame-markers-list').textContent = here.length
+      ? `Frame ${f}: ` + here.map(m => `${m.label} (${m.x},${m.y})`).join(' · ')
+      : '';
+
+    requestAnimationFrame(drawFrame);
+  }
+  requestAnimationFrame(drawFrame);
+
+  // ── Stats ────────────────────────────────────────────────────────────────────
+  function updateStats() {
+    const counts = { neutrophil: 0, rbc: 0, background: 0 };
+    const frames = new Set();
+    for (const m of markers) {
+      counts[m.label] = (counts[m.label] || 0) + 1;
+      frames.add(m.frame);
+    }
+    document.getElementById('count-neutrophil').textContent = counts.neutrophil;
+    document.getElementById('count-rbc').textContent        = counts.rbc;
+    document.getElementById('count-background').textContent = counts.background;
+    document.getElementById('count-frames').textContent     = frames.size + ' frame' + (frames.size !== 1 ? 's' : '') + ' annotated';
+  }
+  updateStats();
+
+  // ── Export / Import ──────────────────────────────────────────────────────────
+  function exportMarkers() {
+    const blob = new Blob([JSON.stringify(markers, null, 2)], { type: 'application/json' });
+    const a    = document.createElement('a');
+    a.href     = URL.createObjectURL(blob);
+    a.download = 'corrections.json';
+    a.click();
+  }
+
+  function importMarkers(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (!Array.isArray(data)) throw new Error('Expected array');
+        // Merge: deduplicate by (frame, x, y)
+        const existing = new Set(markers.map(m => `${m.frame}:${m.x}:${m.y}`));
+        for (const m of data) {
+          if (!existing.has(`${m.frame}:${m.x}:${m.y}`)) markers.push(m);
+        }
+        saveToStorage();
+        updateStats();
+        alert(`Loaded ${data.length} markers. Total: ${markers.length}.`);
+      } catch(err) {
+        alert('Could not parse file: ' + err.message);
+      }
+      input.value = '';
+    };
+    reader.readAsText(file);
+  }
+
+  // ── Playback controls ────────────────────────────────────────────────────────
+  function playBoth()  { orig.play();  seg.play();  }
+  function pauseBoth() { orig.pause(); seg.pause(); }
+  function setSpeed(v) { orig.playbackRate = seg.playbackRate = parseFloat(v); }
+
+  function toggleSync() {
+    synced = !synced;
+    document.getElementById('sync-state').textContent = synced ? 'sync on' : 'sync off';
+    document.getElementById('btn-sync').classList.toggle('active', synced);
+    if (synced) {
+      seg.currentTime = orig.currentTime;
+      syncInt = setInterval(() => { if (!orig.paused) seg.currentTime = orig.currentTime; }, 250);
+    } else {
+      clearInterval(syncInt); syncInt = null;
+    }
+  }
+
+  // Scroll to scrub (both videos)
+  ['vid-original','vid-segmented'].forEach(id => {
+    document.getElementById(id).addEventListener('wheel', e => {
+      e.preventDefault();
+      pauseBoth();
+      const dir = e.deltaY > 0 ? 1 : -1;
+      orig.currentTime = Math.max(0, Math.min(orig.duration || 0, orig.currentTime + dir / FPS));
+      if (synced) seg.currentTime = orig.currentTime;
+    }, { passive: false });
+  });
+
+  // ── Keyboard shortcuts ───────────────────────────────────────────────────────
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+    if (e.key === ' ') { e.preventDefault(); orig.paused ? playBoth() : pauseBoth(); }
+    if (e.key === 'ArrowLeft')  stepFrame(-1);
+    if (e.key === 'ArrowRight') stepFrame(1);
+    if (e.key === 'n') setMode('neutrophil');
+    if (e.key === 'r') setMode('rbc');
+    if (e.key === 'b') setMode('background');
+    if (e.key === 'e') setMode('erase');
+  });
+</script>
 
 </body>
 </html>

@@ -31,6 +31,21 @@ Usage:
 Two-pass workflow (recommended):
     python3 pipeline.py --build-density-map   # pass 1: ~4s, saves rbc_density.npy
     python3 pipeline.py                        # pass 2: uses cached density map
+    python3 pipeline.py --corrections output/corrections.json  # with manual corrections
+
+Corrections JSON format (exported from the viewer):
+    [{ "frame": 42, "x": 160, "y": 120, "label": "neutrophil" }, ...]
+    label values: "neutrophil" | "rbc" | "background"
+
+How corrections are applied per frame:
+  - "neutrophil" points: the cell-body region containing this point is forced
+    to neutrophil (overrides whatever the pipeline detected there).
+  - "rbc" points: the cell-body region containing this point is forced to RBC;
+    also seeds a new Hough-independent RBC marker for the watershed.
+  - "background" points: the region containing this point is excluded from both
+    RBC and neutrophil masks (marks it as neither).
+  Corrections from nearby frames (within ±CORRECTION_RADIUS_FRAMES) also apply,
+  so you don't need to annotate every frame — sparse annotation propagates.
 """
 
 import argparse
@@ -47,6 +62,81 @@ from scipy import ndimage
 COLOUR_RBC_RGB        = (220, 60,  60)
 COLOUR_NEUTROPHIL_RGB = (40,  220, 40)
 ALPHA_FILL            = 0.40
+
+# How many frames around a correction point it propagates to
+CORRECTION_RADIUS_FRAMES = 5
+
+
+# ─── Corrections loader ────────────────────────────────────────────────────────
+
+def load_corrections(path):
+    """
+    Load corrections.json exported from the annotation viewer.
+    Returns a list of dicts: [{frame, x, y, label}, ...]
+    """
+    import json
+    with open(path) as f:
+        data = json.load(f)
+    valid = []
+    for m in data:
+        if {'frame','x','y','label'} <= set(m.keys()):
+            if m['label'] in ('neutrophil', 'rbc', 'background'):
+                valid.append(m)
+    print(f"  Loaded {len(valid)} corrections from {path}")
+    return valid
+
+
+def corrections_for_frame(corrections, frame_idx, radius=CORRECTION_RADIUS_FRAMES):
+    """Return corrections that apply to frame_idx (within ±radius frames)."""
+    return [c for c in corrections if abs(c['frame'] - frame_idx) <= radius]
+
+
+def apply_corrections(rbc_mask, neutro_mask, cell_bodies, frame_corrections, h, w):
+    """
+    Apply manual correction points to the segmentation masks.
+
+    For each correction point, find the connected cell-body component
+    containing that point and:
+      - "neutrophil"  → add component to neutro_mask, remove from rbc_mask
+      - "rbc"         → add component to rbc_mask,   remove from neutro_mask
+      - "background"  → remove component from both masks
+    """
+    if not frame_corrections:
+        return rbc_mask, neutro_mask
+
+    # Label connected components of cell bodies once
+    n_comp, comp_labels = cv2.connectedComponents(cell_bodies)
+
+    for corr in frame_corrections:
+        px = int(np.clip(corr['x'], 0, w - 1))
+        py = int(np.clip(corr['y'], 0, h - 1))
+        label = corr['label']
+
+        comp_lbl = int(comp_labels[py, px])
+        if comp_lbl == 0:
+            # Clicked on background — dilate point slightly to find nearest cell
+            point_mask = np.zeros((h, w), np.uint8)
+            cv2.circle(point_mask, (px, py), 8, 255, -1)
+            nearby = np.unique(comp_labels[point_mask > 0])
+            nearby = nearby[nearby > 0]
+            if len(nearby) == 0:
+                continue
+            # Pick largest nearby component
+            comp_lbl = int(max(nearby, key=lambda l: (comp_labels == l).sum()))
+
+        region = (comp_labels == comp_lbl).astype(np.uint8) * 255
+
+        if label == 'neutrophil':
+            neutro_mask = cv2.bitwise_or(neutro_mask, region)
+            rbc_mask    = cv2.bitwise_and(rbc_mask, cv2.bitwise_not(region))
+        elif label == 'rbc':
+            rbc_mask    = cv2.bitwise_or(rbc_mask, region)
+            neutro_mask = cv2.bitwise_and(neutro_mask, cv2.bitwise_not(region))
+        elif label == 'background':
+            rbc_mask    = cv2.bitwise_and(rbc_mask,    cv2.bitwise_not(region))
+            neutro_mask = cv2.bitwise_and(neutro_mask, cv2.bitwise_not(region))
+
+    return rbc_mask, neutro_mask
 
 
 # ─── Stage jump ────────────────────────────────────────────────────────────────
@@ -325,6 +415,8 @@ def main():
     parser.add_argument("--dark-thresh",     type=int,   default=100)
     parser.add_argument("--motion-lag",      type=int,   default=8,
                         help="Frame lag for inter-frame motion diff (default: 8)")
+    parser.add_argument("--corrections",     type=str,   default=None,
+                        help="Path to corrections.json from the annotation viewer")
     parser.add_argument("--stage-jump-threshold", type=float, default=18.0)
     parser.add_argument("--test",            type=int,   default=0)
     args = parser.parse_args()
@@ -362,6 +454,12 @@ def main():
     print(f"  {n_frames} frames @ {fps:.1f}fps, {frames.shape[2]}×{frames.shape[1]}px")
     print(f"  RBC radius: {args.rbc_radius}px | motion lag: {args.motion_lag}f | dark_thresh: {args.dark_thresh}")
 
+    corrections = []
+    if args.corrections and Path(args.corrections).exists():
+        corrections = load_corrections(args.corrections)
+    elif args.corrections:
+        print(f"  WARNING: corrections file not found: {args.corrections}")
+
     h, w        = frames.shape[1], frames.shape[2]
     motion_buf  = MotionBuffer(lag=args.motion_lag)
     out_frames  = []
@@ -392,6 +490,13 @@ def main():
             enhanced, gray, cell_bodies, rbc_zone, motion_diff,
             args.rbc_radius, h, w
         )
+
+        # Apply manual corrections if provided
+        if corrections:
+            frame_corrs = corrections_for_frame(corrections, i)
+            rbc_mask, neutro_mask = apply_corrections(
+                rbc_mask, neutro_mask, cell_bodies, frame_corrs, h, w
+            )
 
         out = draw_overlay(frame, rbc_mask, neutro_mask)
         draw_legend(out, warming_up=(motion_diff is None))
