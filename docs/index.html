@@ -269,23 +269,23 @@
 
   <div class="videos">
 
-    <!-- Original + annotation canvas -->
+    <!-- Original -->
     <div class="video-card">
-      <div class="card-label">Original — click to annotate</div>
+      <div class="card-label">Original</div>
       <div class="vid-wrap">
         <video id="vid-original" src="chase-original.mp4" loop muted playsinline preload="metadata"></video>
-        <canvas id="anno-canvas" width="320" height="240"></canvas>
       </div>
-      <div class="card-foot" id="orig-foot">frame 0</div>
+      <div class="card-foot">scroll to scrub</div>
     </div>
 
-    <!-- Segmented output -->
+    <!-- Segmented + annotation canvas -->
     <div class="video-card">
-      <div class="card-label">Segmented — pipeline output</div>
+      <div class="card-label">Segmented — click to annotate</div>
       <div class="vid-wrap">
         <video id="vid-segmented" src="chase-segmented.mp4" loop muted playsinline preload="metadata"></video>
+        <canvas id="anno-canvas" width="320" height="240"></canvas>
       </div>
-      <div class="card-foot">scroll to scrub &nbsp;·&nbsp; <span id="sync-state">sync off</span></div>
+      <div class="card-foot" id="orig-foot">frame 0 &nbsp;·&nbsp; <span id="sync-state">sync off</span></div>
     </div>
 
   </div>
@@ -408,11 +408,12 @@
   }
 
   // ── Frame helpers ────────────────────────────────────────────────────────────
-  function getFrame()  { return Math.round(orig.currentTime * FPS); }
+  function getFrame()  { return Math.round(seg.currentTime * FPS); }
   function stepFrame(dir) {
     pauseBoth();
-    orig.currentTime = Math.max(0, Math.min(orig.duration || 0, orig.currentTime + dir / FPS));
-    if (synced) seg.currentTime = orig.currentTime;
+    const t = Math.max(0, Math.min(seg.duration || 0, seg.currentTime + dir / FPS));
+    seg.currentTime  = t;
+    orig.currentTime = t;
   }
 
   // ── Marker ops ───────────────────────────────────────────────────────────────
@@ -446,6 +447,8 @@
     const vx  = Math.round((e.clientX - r.left) / r.width  * VID_W);
     const vy  = Math.round((e.clientY - r.top)  / r.height * VID_H);
     pauseBoth();
+    // Keep both videos on the same frame
+    orig.currentTime = seg.currentTime;
     addOrErase(getFrame(), vx, vy);
   });
 
@@ -580,14 +583,15 @@
     }
   }
 
-  // Scroll to scrub (both videos)
+  // Scroll to scrub — either video drives both
   ['vid-original','vid-segmented'].forEach(id => {
     document.getElementById(id).addEventListener('wheel', e => {
       e.preventDefault();
       pauseBoth();
       const dir = e.deltaY > 0 ? 1 : -1;
-      orig.currentTime = Math.max(0, Math.min(orig.duration || 0, orig.currentTime + dir / FPS));
-      if (synced) seg.currentTime = orig.currentTime;
+      const t   = Math.max(0, Math.min(orig.duration || 0, orig.currentTime + dir / FPS));
+      orig.currentTime = t;
+      seg.currentTime  = t;
     }, { passive: false });
   });
 
