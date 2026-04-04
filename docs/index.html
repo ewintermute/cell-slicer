@@ -368,6 +368,9 @@
   const VID_H  = 240;
   const ERASE_RADIUS = 14; // px in video coords
 
+  // Stage jump frames — corrections don't trail across these
+  const STAGE_JUMPS = new Set([8,9,43,44,70,85,118,132,166,255,256,356,357,403]);
+
   const COLOURS = {
     neutrophil: '#28dc28',
     rbc:        '#dc3c3c',
@@ -474,6 +477,14 @@
     for (const m of markers) {
       const delta = Math.abs(m.frame - f);
       if (delta > FRAME_FADE) continue;
+
+      // Don't trail across stage jump boundaries
+      if (delta > 0) {
+        const lo = Math.min(m.frame, f), hi = Math.max(m.frame, f);
+        let blocked = false;
+        for (let jf of STAGE_JUMPS) { if (jf > lo && jf <= hi) { blocked=true; break; } }
+        if (blocked) continue;
+      }
 
       const alpha = FILL_ALPHA * (1 - delta / (FRAME_FADE + 1));
       const col   = COLOURS[m.label] || '#fff';
