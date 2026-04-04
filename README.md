@@ -4,15 +4,21 @@ AI-assisted image analysis pipeline for segmenting and tracking cells in brightf
 
 ## What it does
 
-Identifies and marks boundaries of 3 cell types across all frames of a microscopy video:
+Identifies and marks boundaries of 2 cell types across all frames of a microscopy video:
 
 | Cell type | Colour | Detection method |
 |-----------|--------|-----------------|
-| **Neutrophil** | 🟢 Green | Background subtraction + adaptive threshold → largest foreground blob |
-| **Microbe** | 🟡 Yellow | Dark-blob detection on inverted image, size-filtered |
-| **Red Blood Cells** | 🔴 Red | Hough Circle Transform (tuned for RBC diameter and central pallor) |
+| **Neutrophil** | 🟢 Green | Largest unseeded cell body region after RBC watershed |
+| **Red Blood Cells** | 🔴 Red | Hough circle seeds → marker-controlled watershed on dark-border mask |
 
 Output is an MP4 with semi-transparent coloured masks and outlines overlaid on the original footage.
+
+### Detection strategy
+
+1. **Cell body mask** — threshold dark regions (cell borders), fill holes (handles RBC central pallor), remove sub-cell noise → solid binary mask of all cell material
+2. **RBC seeds** — Hough Circle Transform places one seed per RBC centre; these become watershed markers
+3. **Marker-controlled watershed** — expands seeds into actual cell body shapes; prevents the RBC central pallor creating spurious internal regions
+4. **Neutrophil** — any large connected component in the cell body mask *not* claimed by a Hough seed; the neutrophil is non-round and never gets a Hough seed
 
 ## Source material
 
@@ -34,8 +40,8 @@ Default I/O:
 ```
 --input PATH              Source video (default: source-movie/chase-original.mp4)
 --output PATH             Output video (default: output/chase-segmented.mp4)
---diameter-rbc FLOAT      Expected RBC diameter in pixels (default: 37)
---bg-history INT          Background model history window in frames (default: 25)
+--rbc-radius FLOAT        Expected RBC radius in pixels (default: 17 → ~34px diameter)
+--dark-thresh INT         Intensity threshold for dark cell borders (default: 100)
 --stage-jump-threshold    Mean pixel diff to flag stage movement (default: 18)
 --test INT                Process only first N frames (for quick testing)
 ```
