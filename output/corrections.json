@@ -715,12 +715,6 @@
   },
   {
     "frame": 0,
-    "x": 272,
-    "y": 109,
-    "label": "rbc"
-  },
-  {
-    "frame": 0,
     "x": 267,
     "y": 131,
     "label": "rbc"
@@ -2043,6 +2037,5100 @@
     "frame": 72,
     "x": 280,
     "y": 50,
+    "label": "background"
+  },
+  {
+    "frame": 0,
+    "x": 99,
+    "y": 112,
+    "label": "rbc"
+  },
+  {
+    "frame": 0,
+    "x": 91,
+    "y": 129,
+    "label": "rbc"
+  },
+  {
+    "frame": 0,
+    "x": 127,
+    "y": 6,
+    "label": "rbc"
+  },
+  {
+    "frame": 0,
+    "x": 279,
+    "y": 121,
+    "label": "background"
+  },
+  {
+    "frame": 0,
+    "x": 267,
+    "y": 98,
+    "label": "rbc"
+  },
+  {
+    "frame": 0,
+    "x": 226,
+    "y": 31,
+    "label": "background"
+  },
+  {
+    "frame": 0,
+    "x": 278,
+    "y": 47,
+    "label": "background"
+  },
+  {
+    "frame": 0,
+    "x": 235,
+    "y": 81,
+    "label": "background"
+  },
+  {
+    "frame": 6,
+    "x": 179,
+    "y": 104,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 6,
+    "x": 171,
+    "y": 90,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 6,
+    "x": 157,
+    "y": 95,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 6,
+    "x": 154,
+    "y": 110,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 9,
+    "x": 121,
+    "y": 86,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 9,
+    "x": 146,
+    "y": 71,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 9,
+    "x": 131,
+    "y": 63,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 9,
+    "x": 169,
+    "y": 111,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 86,
+    "x": 147,
+    "y": 145,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 86,
+    "x": 125,
+    "y": 117,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 86,
+    "x": 149,
+    "y": 118,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 86,
+    "x": 131,
+    "y": 135,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 86,
+    "x": 171,
+    "y": 153,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 86,
+    "x": 153,
+    "y": 160,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 86,
+    "x": 196,
+    "y": 156,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 86,
+    "x": 181,
+    "y": 141,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 86,
+    "x": 161,
+    "y": 129,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 86,
+    "x": 128,
+    "y": 100,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 86,
+    "x": 132,
+    "y": 152,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 86,
+    "x": 89,
+    "y": 163,
+    "label": "rbc"
+  },
+  {
+    "frame": 86,
+    "x": 24,
+    "y": 183,
+    "label": "rbc"
+  },
+  {
+    "frame": 86,
+    "x": 30,
+    "y": 224,
+    "label": "rbc"
+  },
+  {
+    "frame": 86,
+    "x": 192,
+    "y": 205,
+    "label": "rbc"
+  },
+  {
+    "frame": 86,
+    "x": 209,
+    "y": 114,
+    "label": "rbc"
+  },
+  {
+    "frame": 86,
+    "x": 226,
+    "y": 67,
+    "label": "rbc"
+  },
+  {
+    "frame": 86,
+    "x": 186,
+    "y": 22,
+    "label": "rbc"
+  },
+  {
+    "frame": 86,
+    "x": 128,
+    "y": 18,
+    "label": "rbc"
+  },
+  {
+    "frame": 86,
+    "x": 69,
+    "y": 23,
+    "label": "rbc"
+  },
+  {
+    "frame": 86,
+    "x": 30,
+    "y": 69,
+    "label": "rbc"
+  },
+  {
+    "frame": 86,
+    "x": 235,
+    "y": 7,
+    "label": "rbc"
+  },
+  {
+    "frame": 86,
+    "x": 301,
+    "y": 14,
+    "label": "rbc"
+  },
+  {
+    "frame": 91,
+    "x": 106,
+    "y": 90,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 91,
+    "x": 110,
+    "y": 120,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 91,
+    "x": 125,
+    "y": 138,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 91,
+    "x": 148,
+    "y": 157,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 91,
+    "x": 154,
+    "y": 137,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 91,
+    "x": 135,
+    "y": 114,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 91,
+    "x": 125,
+    "y": 95,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 91,
+    "x": 170,
+    "y": 152,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 91,
+    "x": 153,
+    "y": 121,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 91,
+    "x": 266,
+    "y": 57,
+    "label": "background"
+  },
+  {
+    "frame": 91,
+    "x": 128,
+    "y": 10,
+    "label": "rbc"
+  },
+  {
+    "frame": 91,
+    "x": 64,
+    "y": 21,
+    "label": "rbc"
+  },
+  {
+    "frame": 91,
+    "x": 184,
+    "y": 9,
+    "label": "rbc"
+  },
+  {
+    "frame": 91,
+    "x": 243,
+    "y": 10,
+    "label": "rbc"
+  },
+  {
+    "frame": 91,
+    "x": 311,
+    "y": 15,
+    "label": "rbc"
+  },
+  {
+    "frame": 91,
+    "x": 30,
+    "y": 223,
+    "label": "rbc"
+  },
+  {
+    "frame": 96,
+    "x": 128,
+    "y": 147,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 96,
+    "x": 106,
+    "y": 85,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 96,
+    "x": 120,
+    "y": 114,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 96,
+    "x": 94,
+    "y": 97,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 96,
+    "x": 120,
+    "y": 99,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 96,
+    "x": 152,
+    "y": 130,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 96,
+    "x": 151,
+    "y": 104,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 96,
+    "x": 165,
+    "y": 149,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 96,
+    "x": 194,
+    "y": 150,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 96,
+    "x": 133,
+    "y": 130,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 96,
+    "x": 69,
+    "y": 18,
+    "label": "rbc"
+  },
+  {
+    "frame": 96,
+    "x": 136,
+    "y": 10,
+    "label": "rbc"
+  },
+  {
+    "frame": 96,
+    "x": 180,
+    "y": 6,
+    "label": "rbc"
+  },
+  {
+    "frame": 96,
+    "x": 232,
+    "y": 5,
+    "label": "rbc"
+  },
+  {
+    "frame": 96,
+    "x": 299,
+    "y": 8,
+    "label": "rbc"
+  },
+  {
+    "frame": 96,
+    "x": 107,
+    "y": 46,
+    "label": "background"
+  },
+  {
+    "frame": 96,
+    "x": 268,
+    "y": 53,
+    "label": "background"
+  },
+  {
+    "frame": 102,
+    "x": 277,
+    "y": 53,
+    "label": "background"
+  },
+  {
+    "frame": 102,
+    "x": 139,
+    "y": 11,
+    "label": "rbc"
+  },
+  {
+    "frame": 102,
+    "x": 186,
+    "y": 8,
+    "label": "rbc"
+  },
+  {
+    "frame": 102,
+    "x": 239,
+    "y": 4,
+    "label": "rbc"
+  },
+  {
+    "frame": 102,
+    "x": 302,
+    "y": 9,
+    "label": "rbc"
+  },
+  {
+    "frame": 102,
+    "x": 133,
+    "y": 145,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 102,
+    "x": 101,
+    "y": 118,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 102,
+    "x": 107,
+    "y": 91,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 102,
+    "x": 149,
+    "y": 131,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 102,
+    "x": 123,
+    "y": 91,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 102,
+    "x": 131,
+    "y": 123,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 102,
+    "x": 138,
+    "y": 110,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 102,
+    "x": 70,
+    "y": 23,
+    "label": "rbc"
+  },
+  {
+    "frame": 102,
+    "x": 184,
+    "y": 146,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 102,
+    "x": 161,
+    "y": 146,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 102,
+    "x": 29,
+    "y": 221,
+    "label": "rbc"
+  },
+  {
+    "frame": 108,
+    "x": 118,
+    "y": 131,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 108,
+    "x": 70,
+    "y": 124,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 108,
+    "x": 84,
+    "y": 94,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 108,
+    "x": 105,
+    "y": 107,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 108,
+    "x": 137,
+    "y": 119,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 108,
+    "x": 124,
+    "y": 147,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 108,
+    "x": 144,
+    "y": 132,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 108,
+    "x": 129,
+    "y": 101,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 108,
+    "x": 117,
+    "y": 91,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 108,
+    "x": 210,
+    "y": 111,
+    "label": "rbc"
+  },
+  {
+    "frame": 108,
+    "x": 137,
+    "y": 10,
+    "label": "rbc"
+  },
+  {
+    "frame": 108,
+    "x": 178,
+    "y": 12,
+    "label": "rbc"
+  },
+  {
+    "frame": 113,
+    "x": 112,
+    "y": 143,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 113,
+    "x": 74,
+    "y": 119,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 113,
+    "x": 56,
+    "y": 116,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 113,
+    "x": 85,
+    "y": 95,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 113,
+    "x": 105,
+    "y": 91,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 113,
+    "x": 111,
+    "y": 115,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 113,
+    "x": 96,
+    "y": 124,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 113,
+    "x": 130,
+    "y": 137,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 113,
+    "x": 127,
+    "y": 105,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 113,
+    "x": 158,
+    "y": 131,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 113,
+    "x": 195,
+    "y": 107,
+    "label": "rbc"
+  },
+  {
+    "frame": 113,
+    "x": 134,
+    "y": 9,
+    "label": "rbc"
+  },
+  {
+    "frame": 113,
+    "x": 180,
+    "y": 12,
+    "label": "rbc"
+  },
+  {
+    "frame": 113,
+    "x": 239,
+    "y": 4,
+    "label": "rbc"
+  },
+  {
+    "frame": 113,
+    "x": 307,
+    "y": 8,
+    "label": "rbc"
+  },
+  {
+    "frame": 113,
+    "x": 68,
+    "y": 29,
+    "label": "rbc"
+  },
+  {
+    "frame": 113,
+    "x": 267,
+    "y": 106,
+    "label": "background"
+  },
+  {
+    "frame": 113,
+    "x": 271,
+    "y": 58,
+    "label": "background"
+  },
+  {
+    "frame": 113,
+    "x": 161,
+    "y": 59,
+    "label": "background"
+  },
+  {
+    "frame": 118,
+    "x": 160,
+    "y": 66,
+    "label": "background"
+  },
+  {
+    "frame": 118,
+    "x": 110,
+    "y": 115,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 118,
+    "x": 52,
+    "y": 121,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 118,
+    "x": 71,
+    "y": 100,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 118,
+    "x": 95,
+    "y": 130,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 118,
+    "x": 97,
+    "y": 107,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 118,
+    "x": 74,
+    "y": 126,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 118,
+    "x": 117,
+    "y": 134,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 118,
+    "x": 127,
+    "y": 116,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 118,
+    "x": 89,
+    "y": 91,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 118,
+    "x": 70,
+    "y": 24,
+    "label": "rbc"
+  },
+  {
+    "frame": 118,
+    "x": 129,
+    "y": 8,
+    "label": "rbc"
+  },
+  {
+    "frame": 118,
+    "x": 185,
+    "y": 10,
+    "label": "rbc"
+  },
+  {
+    "frame": 118,
+    "x": 232,
+    "y": 10,
+    "label": "rbc"
+  },
+  {
+    "frame": 118,
+    "x": 310,
+    "y": 10,
+    "label": "rbc"
+  },
+  {
+    "frame": 118,
+    "x": 216,
+    "y": 70,
+    "label": "rbc"
+  },
+  {
+    "frame": 118,
+    "x": 25,
+    "y": 225,
+    "label": "rbc"
+  },
+  {
+    "frame": 118,
+    "x": 154,
+    "y": 128,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 119,
+    "x": 51,
+    "y": 122,
+    "label": "background"
+  },
+  {
+    "frame": 119,
+    "x": 73,
+    "y": 124,
+    "label": "background"
+  },
+  {
+    "frame": 119,
+    "x": 72,
+    "y": 101,
+    "label": "background"
+  },
+  {
+    "frame": 119,
+    "x": 135,
+    "y": 92,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 119,
+    "x": 157,
+    "y": 112,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 119,
+    "x": 142,
+    "y": 119,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 119,
+    "x": 133,
+    "y": 107,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 119,
+    "x": 177,
+    "y": 135,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 119,
+    "x": 171,
+    "y": 101,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 119,
+    "x": 180,
+    "y": 114,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 119,
+    "x": 150,
+    "y": 88,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 119,
+    "x": 118,
+    "y": 104,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 119,
+    "x": 81,
+    "y": 76,
+    "label": "rbc"
+  },
+  {
+    "frame": 119,
+    "x": 95,
+    "y": 83,
+    "label": "rbc"
+  },
+  {
+    "frame": 119,
+    "x": 95,
+    "y": 66,
+    "label": "rbc"
+  },
+  {
+    "frame": 119,
+    "x": 76,
+    "y": 61,
+    "label": "rbc"
+  },
+  {
+    "frame": 119,
+    "x": 30,
+    "y": 148,
+    "label": "rbc"
+  },
+  {
+    "frame": 119,
+    "x": 78,
+    "y": 178,
+    "label": "rbc"
+  },
+  {
+    "frame": 119,
+    "x": 89,
+    "y": 217,
+    "label": "rbc"
+  },
+  {
+    "frame": 119,
+    "x": 139,
+    "y": 159,
+    "label": "rbc"
+  },
+  {
+    "frame": 119,
+    "x": 249,
+    "y": 201,
+    "label": "rbc"
+  },
+  {
+    "frame": 119,
+    "x": 271,
+    "y": 112,
+    "label": "rbc"
+  },
+  {
+    "frame": 119,
+    "x": 274,
+    "y": 68,
+    "label": "rbc"
+  },
+  {
+    "frame": 119,
+    "x": 31,
+    "y": 43,
+    "label": "rbc"
+  },
+  {
+    "frame": 124,
+    "x": 110,
+    "y": 124,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 124,
+    "x": 102,
+    "y": 112,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 124,
+    "x": 161,
+    "y": 107,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 124,
+    "x": 146,
+    "y": 96,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 124,
+    "x": 171,
+    "y": 124,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 124,
+    "x": 121,
+    "y": 100,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 124,
+    "x": 134,
+    "y": 126,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 124,
+    "x": 196,
+    "y": 10,
+    "label": "rbc"
+  },
+  {
+    "frame": 124,
+    "x": 242,
+    "y": 8,
+    "label": "rbc"
+  },
+  {
+    "frame": 124,
+    "x": 281,
+    "y": 4,
+    "label": "rbc"
+  },
+  {
+    "frame": 129,
+    "x": 102,
+    "y": 134,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 129,
+    "x": 87,
+    "y": 143,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 129,
+    "x": 93,
+    "y": 120,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 129,
+    "x": 132,
+    "y": 114,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 129,
+    "x": 112,
+    "y": 103,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 129,
+    "x": 142,
+    "y": 95,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 129,
+    "x": 148,
+    "y": 124,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 129,
+    "x": 129,
+    "y": 134,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 129,
+    "x": 172,
+    "y": 122,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 129,
+    "x": 165,
+    "y": 107,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 129,
+    "x": 126,
+    "y": 91,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 129,
+    "x": 78,
+    "y": 191,
+    "label": "rbc"
+  },
+  {
+    "frame": 129,
+    "x": 86,
+    "y": 230,
+    "label": "rbc"
+  },
+  {
+    "frame": 129,
+    "x": 194,
+    "y": 10,
+    "label": "rbc"
+  },
+  {
+    "frame": 129,
+    "x": 246,
+    "y": 12,
+    "label": "rbc"
+  },
+  {
+    "frame": 129,
+    "x": 283,
+    "y": 6,
+    "label": "rbc"
+  },
+  {
+    "frame": 134,
+    "x": 177,
+    "y": 140,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 134,
+    "x": 141,
+    "y": 162,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 134,
+    "x": 142,
+    "y": 144,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 134,
+    "x": 158,
+    "y": 138,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 134,
+    "x": 167,
+    "y": 124,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 134,
+    "x": 177,
+    "y": 102,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 134,
+    "x": 197,
+    "y": 97,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 134,
+    "x": 211,
+    "y": 109,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 134,
+    "x": 194,
+    "y": 118,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 134,
+    "x": 239,
+    "y": 107,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 134,
+    "x": 174,
+    "y": 222,
+    "label": "rbc"
+  },
+  {
+    "frame": 134,
+    "x": 133,
+    "y": 205,
+    "label": "rbc"
+  },
+  {
+    "frame": 134,
+    "x": 99,
+    "y": 232,
+    "label": "rbc"
+  },
+  {
+    "frame": 134,
+    "x": 91,
+    "y": 140,
+    "label": "rbc"
+  },
+  {
+    "frame": 134,
+    "x": 157,
+    "y": 63,
+    "label": "rbc"
+  },
+  {
+    "frame": 134,
+    "x": 9,
+    "y": 95,
+    "label": "rbc"
+  },
+  {
+    "frame": 134,
+    "x": 192,
+    "y": 10,
+    "label": "rbc"
+  },
+  {
+    "frame": 134,
+    "x": 259,
+    "y": 10,
+    "label": "rbc"
+  },
+  {
+    "frame": 134,
+    "x": 306,
+    "y": 5,
+    "label": "rbc"
+  },
+  {
+    "frame": 139,
+    "x": 100,
+    "y": 88,
+    "label": "background"
+  },
+  {
+    "frame": 139,
+    "x": 220,
+    "y": 55,
+    "label": "background"
+  },
+  {
+    "frame": 139,
+    "x": 278,
+    "y": 53,
+    "label": "background"
+  },
+  {
+    "frame": 139,
+    "x": 152,
+    "y": 159,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 139,
+    "x": 150,
+    "y": 173,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 139,
+    "x": 137,
+    "y": 131,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 139,
+    "x": 127,
+    "y": 147,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 139,
+    "x": 120,
+    "y": 169,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 139,
+    "x": 163,
+    "y": 134,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 139,
+    "x": 160,
+    "y": 108,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 139,
+    "x": 154,
+    "y": 122,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 139,
+    "x": 188,
+    "y": 115,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 139,
+    "x": 180,
+    "y": 99,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 139,
+    "x": 207,
+    "y": 109,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 139,
+    "x": 228,
+    "y": 105,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 139,
+    "x": 150,
+    "y": 52,
+    "label": "rbc"
+  },
+  {
+    "frame": 139,
+    "x": 47,
+    "y": 125,
+    "label": "rbc"
+  },
+  {
+    "frame": 139,
+    "x": 91,
+    "y": 126,
+    "label": "rbc"
+  },
+  {
+    "frame": 139,
+    "x": 193,
+    "y": 6,
+    "label": "rbc"
+  },
+  {
+    "frame": 139,
+    "x": 258,
+    "y": 6,
+    "label": "rbc"
+  },
+  {
+    "frame": 144,
+    "x": 98,
+    "y": 189,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 144,
+    "x": 122,
+    "y": 167,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 144,
+    "x": 123,
+    "y": 184,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 144,
+    "x": 106,
+    "y": 175,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 144,
+    "x": 167,
+    "y": 145,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 144,
+    "x": 133,
+    "y": 133,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 144,
+    "x": 137,
+    "y": 165,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 144,
+    "x": 150,
+    "y": 154,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 144,
+    "x": 153,
+    "y": 122,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 144,
+    "x": 177,
+    "y": 117,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 144,
+    "x": 83,
+    "y": 143,
+    "label": "rbc"
+  },
+  {
+    "frame": 144,
+    "x": 44,
+    "y": 128,
+    "label": "rbc"
+  },
+  {
+    "frame": 144,
+    "x": 13,
+    "y": 93,
+    "label": "rbc"
+  },
+  {
+    "frame": 144,
+    "x": 192,
+    "y": 8,
+    "label": "rbc"
+  },
+  {
+    "frame": 144,
+    "x": 254,
+    "y": 9,
+    "label": "rbc"
+  },
+  {
+    "frame": 144,
+    "x": 310,
+    "y": 198,
+    "label": "rbc"
+  },
+  {
+    "frame": 144,
+    "x": 299,
+    "y": 4,
+    "label": "rbc"
+  },
+  {
+    "frame": 144,
+    "x": 105,
+    "y": 95,
+    "label": "background"
+  },
+  {
+    "frame": 144,
+    "x": 280,
+    "y": 54,
+    "label": "background"
+  },
+  {
+    "frame": 149,
+    "x": 87,
+    "y": 188,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 149,
+    "x": 102,
+    "y": 194,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 149,
+    "x": 120,
+    "y": 190,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 149,
+    "x": 145,
+    "y": 173,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 149,
+    "x": 131,
+    "y": 154,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 149,
+    "x": 146,
+    "y": 129,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 149,
+    "x": 163,
+    "y": 128,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 149,
+    "x": 161,
+    "y": 151,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 149,
+    "x": 101,
+    "y": 91,
+    "label": "background"
+  },
+  {
+    "frame": 149,
+    "x": 272,
+    "y": 55,
+    "label": "background"
+  },
+  {
+    "frame": 149,
+    "x": 302,
+    "y": 151,
+    "label": "background"
+  },
+  {
+    "frame": 149,
+    "x": 193,
+    "y": 10,
+    "label": "rbc"
+  },
+  {
+    "frame": 149,
+    "x": 260,
+    "y": 9,
+    "label": "rbc"
+  },
+  {
+    "frame": 149,
+    "x": 302,
+    "y": 5,
+    "label": "rbc"
+  },
+  {
+    "frame": 149,
+    "x": 145,
+    "y": 65,
+    "label": "rbc"
+  },
+  {
+    "frame": 149,
+    "x": 98,
+    "y": 31,
+    "label": "rbc"
+  },
+  {
+    "frame": 149,
+    "x": 51,
+    "y": 49,
+    "label": "rbc"
+  },
+  {
+    "frame": 149,
+    "x": 6,
+    "y": 90,
+    "label": "rbc"
+  },
+  {
+    "frame": 149,
+    "x": 37,
+    "y": 122,
+    "label": "rbc"
+  },
+  {
+    "frame": 149,
+    "x": 80,
+    "y": 142,
+    "label": "rbc"
+  },
+  {
+    "frame": 154,
+    "x": 85,
+    "y": 194,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 154,
+    "x": 127,
+    "y": 184,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 154,
+    "x": 76,
+    "y": 208,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 154,
+    "x": 113,
+    "y": 173,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 154,
+    "x": 149,
+    "y": 147,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 154,
+    "x": 142,
+    "y": 169,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 154,
+    "x": 118,
+    "y": 157,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 154,
+    "x": 107,
+    "y": 192,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 154,
+    "x": 183,
+    "y": 128,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 159,
+    "x": 63,
+    "y": 215,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 159,
+    "x": 81,
+    "y": 184,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 159,
+    "x": 115,
+    "y": 190,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 159,
+    "x": 90,
+    "y": 201,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 159,
+    "x": 122,
+    "y": 169,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 159,
+    "x": 117,
+    "y": 152,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 159,
+    "x": 137,
+    "y": 150,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 159,
+    "x": 145,
+    "y": 170,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 164,
+    "x": 51,
+    "y": 217,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 164,
+    "x": 72,
+    "y": 219,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 164,
+    "x": 89,
+    "y": 196,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 164,
+    "x": 111,
+    "y": 196,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 164,
+    "x": 70,
+    "y": 203,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 164,
+    "x": 98,
+    "y": 181,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 164,
+    "x": 81,
+    "y": 178,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 164,
+    "x": 118,
+    "y": 158,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 164,
+    "x": 124,
+    "y": 179,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 164,
+    "x": 142,
+    "y": 152,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 164,
+    "x": 110,
+    "y": 171,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 169,
+    "x": 110,
+    "y": 192,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 169,
+    "x": 125,
+    "y": 172,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 169,
+    "x": 93,
+    "y": 179,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 169,
+    "x": 103,
+    "y": 166,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 169,
+    "x": 154,
+    "y": 155,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 169,
+    "x": 139,
+    "y": 147,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 169,
+    "x": 163,
+    "y": 136,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 169,
+    "x": 190,
+    "y": 122,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 169,
+    "x": 186,
+    "y": 147,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 169,
+    "x": 152,
+    "y": 172,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 169,
+    "x": 175,
+    "y": 158,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 169,
+    "x": 206,
+    "y": 115,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 169,
+    "x": 222,
+    "y": 103,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 169,
+    "x": 168,
+    "y": 211,
+    "label": "rbc"
+  },
+  {
+    "frame": 169,
+    "x": 114,
+    "y": 8,
+    "label": "rbc"
+  },
+  {
+    "frame": 169,
+    "x": 45,
+    "y": 4,
+    "label": "rbc"
+  },
+  {
+    "frame": 169,
+    "x": 93,
+    "y": 228,
+    "label": "rbc"
+  },
+  {
+    "frame": 174,
+    "x": 93,
+    "y": 200,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 174,
+    "x": 79,
+    "y": 187,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 174,
+    "x": 103,
+    "y": 184,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 174,
+    "x": 116,
+    "y": 162,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 174,
+    "x": 119,
+    "y": 188,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 174,
+    "x": 165,
+    "y": 166,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 174,
+    "x": 144,
+    "y": 147,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 174,
+    "x": 186,
+    "y": 135,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 174,
+    "x": 137,
+    "y": 169,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 174,
+    "x": 206,
+    "y": 120,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 174,
+    "x": 168,
+    "y": 129,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 174,
+    "x": 160,
+    "y": 150,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 179,
+    "x": 112,
+    "y": 188,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 179,
+    "x": 75,
+    "y": 189,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 179,
+    "x": 89,
+    "y": 171,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 179,
+    "x": 118,
+    "y": 172,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 179,
+    "x": 89,
+    "y": 197,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 179,
+    "x": 159,
+    "y": 158,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 179,
+    "x": 146,
+    "y": 147,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 179,
+    "x": 139,
+    "y": 174,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 179,
+    "x": 175,
+    "y": 145,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 179,
+    "x": 198,
+    "y": 128,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 184,
+    "x": 95,
+    "y": 198,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 184,
+    "x": 60,
+    "y": 189,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 184,
+    "x": 80,
+    "y": 170,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 184,
+    "x": 95,
+    "y": 179,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 184,
+    "x": 118,
+    "y": 179,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 184,
+    "x": 77,
+    "y": 188,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 184,
+    "x": 123,
+    "y": 162,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 184,
+    "x": 152,
+    "y": 158,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 184,
+    "x": 138,
+    "y": 176,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 184,
+    "x": 184,
+    "y": 135,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 189,
+    "x": 87,
+    "y": 196,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 189,
+    "x": 54,
+    "y": 190,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 189,
+    "x": 70,
+    "y": 162,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 189,
+    "x": 119,
+    "y": 177,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 189,
+    "x": 84,
+    "y": 181,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 189,
+    "x": 106,
+    "y": 171,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 189,
+    "x": 135,
+    "y": 154,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 189,
+    "x": 108,
+    "y": 198,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 189,
+    "x": 94,
+    "y": 161,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 189,
+    "x": 280,
+    "y": 15,
+    "label": "background"
+  },
+  {
+    "frame": 189,
+    "x": 261,
+    "y": 20,
+    "label": "background"
+  },
+  {
+    "frame": 189,
+    "x": 116,
+    "y": 6,
+    "label": "rbc"
+  },
+  {
+    "frame": 194,
+    "x": 57,
+    "y": 194,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 194,
+    "x": 106,
+    "y": 184,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 194,
+    "x": 101,
+    "y": 163,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 194,
+    "x": 60,
+    "y": 173,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 194,
+    "x": 63,
+    "y": 150,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 194,
+    "x": 41,
+    "y": 173,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 194,
+    "x": 82,
+    "y": 198,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 194,
+    "x": 81,
+    "y": 177,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 194,
+    "x": 97,
+    "y": 196,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 194,
+    "x": 120,
+    "y": 173,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 194,
+    "x": 156,
+    "y": 160,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 194,
+    "x": 171,
+    "y": 196,
+    "label": "rbc"
+  },
+  {
+    "frame": 194,
+    "x": 266,
+    "y": 19,
+    "label": "background"
+  },
+  {
+    "frame": 194,
+    "x": 36,
+    "y": 116,
+    "label": "rbc"
+  },
+  {
+    "frame": 194,
+    "x": 14,
+    "y": 203,
+    "label": "rbc"
+  },
+  {
+    "frame": 199,
+    "x": 55,
+    "y": 187,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 199,
+    "x": 83,
+    "y": 192,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 199,
+    "x": 52,
+    "y": 167,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 199,
+    "x": 66,
+    "y": 143,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 199,
+    "x": 91,
+    "y": 164,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 199,
+    "x": 101,
+    "y": 181,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 199,
+    "x": 68,
+    "y": 170,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 199,
+    "x": 80,
+    "y": 139,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 199,
+    "x": 142,
+    "y": 168,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 199,
+    "x": 97,
+    "y": 200,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 199,
+    "x": 30,
+    "y": 177,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 199,
+    "x": 167,
+    "y": 205,
+    "label": "rbc"
+  },
+  {
+    "frame": 199,
+    "x": 169,
+    "y": 183,
+    "label": "rbc"
+  },
+  {
+    "frame": 199,
+    "x": 113,
+    "y": 9,
+    "label": "rbc"
+  },
+  {
+    "frame": 199,
+    "x": 13,
+    "y": 211,
+    "label": "rbc"
+  },
+  {
+    "frame": 204,
+    "x": 66,
+    "y": 187,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 204,
+    "x": 49,
+    "y": 171,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 204,
+    "x": 37,
+    "y": 180,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 204,
+    "x": 67,
+    "y": 153,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 204,
+    "x": 75,
+    "y": 127,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 204,
+    "x": 91,
+    "y": 133,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 204,
+    "x": 81,
+    "y": 175,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 204,
+    "x": 87,
+    "y": 197,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 204,
+    "x": 96,
+    "y": 183,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 204,
+    "x": 57,
+    "y": 135,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 204,
+    "x": 35,
+    "y": 114,
+    "label": "rbc"
+  },
+  {
+    "frame": 204,
+    "x": 113,
+    "y": 80,
+    "label": "rbc"
+  },
+  {
+    "frame": 204,
+    "x": 113,
+    "y": 8,
+    "label": "rbc"
+  },
+  {
+    "frame": 204,
+    "x": 127,
+    "y": 177,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 209,
+    "x": 59,
+    "y": 196,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 209,
+    "x": 70,
+    "y": 144,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 209,
+    "x": 45,
+    "y": 154,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 209,
+    "x": 69,
+    "y": 175,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 209,
+    "x": 91,
+    "y": 183,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 209,
+    "x": 85,
+    "y": 166,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 209,
+    "x": 89,
+    "y": 135,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 209,
+    "x": 70,
+    "y": 129,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 209,
+    "x": 112,
+    "y": 182,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 209,
+    "x": 126,
+    "y": 177,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 209,
+    "x": 49,
+    "y": 172,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 209,
+    "x": 108,
+    "y": 10,
+    "label": "rbc"
+  },
+  {
+    "frame": 209,
+    "x": 120,
+    "y": 127,
+    "label": "background"
+  },
+  {
+    "frame": 209,
+    "x": 36,
+    "y": 111,
+    "label": "rbc"
+  },
+  {
+    "frame": 209,
+    "x": 115,
+    "y": 69,
+    "label": "rbc"
+  },
+  {
+    "frame": 214,
+    "x": 110,
+    "y": 129,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 214,
+    "x": 63,
+    "y": 138,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 214,
+    "x": 46,
+    "y": 185,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 214,
+    "x": 79,
+    "y": 178,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 214,
+    "x": 55,
+    "y": 171,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 214,
+    "x": 84,
+    "y": 140,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 214,
+    "x": 68,
+    "y": 160,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 214,
+    "x": 93,
+    "y": 179,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 214,
+    "x": 107,
+    "y": 15,
+    "label": "rbc"
+  },
+  {
+    "frame": 219,
+    "x": 91,
+    "y": 154,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 219,
+    "x": 108,
+    "y": 122,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 219,
+    "x": 64,
+    "y": 140,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 219,
+    "x": 51,
+    "y": 174,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 219,
+    "x": 66,
+    "y": 185,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 219,
+    "x": 73,
+    "y": 160,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 219,
+    "x": 89,
+    "y": 137,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 219,
+    "x": 119,
+    "y": 141,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 219,
+    "x": 169,
+    "y": 198,
+    "label": "rbc"
+  },
+  {
+    "frame": 219,
+    "x": 112,
+    "y": 14,
+    "label": "rbc"
+  },
+  {
+    "frame": 219,
+    "x": 66,
+    "y": 39,
+    "label": "rbc"
+  },
+  {
+    "frame": 219,
+    "x": 102,
+    "y": 72,
+    "label": "rbc"
+  },
+  {
+    "frame": 219,
+    "x": 307,
+    "y": 222,
+    "label": "rbc"
+  },
+  {
+    "frame": 219,
+    "x": 174,
+    "y": 234,
+    "label": "rbc"
+  },
+  {
+    "frame": 224,
+    "x": 106,
+    "y": 188,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 224,
+    "x": 74,
+    "y": 173,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 224,
+    "x": 49,
+    "y": 171,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 224,
+    "x": 78,
+    "y": 138,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 224,
+    "x": 118,
+    "y": 131,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 224,
+    "x": 93,
+    "y": 151,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 224,
+    "x": 103,
+    "y": 122,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 224,
+    "x": 118,
+    "y": 116,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 224,
+    "x": 116,
+    "y": 149,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 224,
+    "x": 88,
+    "y": 126,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 224,
+    "x": 97,
+    "y": 76,
+    "label": "rbc"
+  },
+  {
+    "frame": 224,
+    "x": 108,
+    "y": 10,
+    "label": "rbc"
+  },
+  {
+    "frame": 224,
+    "x": 156,
+    "y": 77,
+    "label": "rbc"
+  },
+  {
+    "frame": 224,
+    "x": 148,
+    "y": 40,
+    "label": "background"
+  },
+  {
+    "frame": 224,
+    "x": 287,
+    "y": 21,
+    "label": "background"
+  },
+  {
+    "frame": 224,
+    "x": 277,
+    "y": 197,
+    "label": "background"
+  },
+  {
+    "frame": 229,
+    "x": 112,
+    "y": 115,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 229,
+    "x": 131,
+    "y": 90,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 229,
+    "x": 137,
+    "y": 109,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 229,
+    "x": 95,
+    "y": 137,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 229,
+    "x": 91,
+    "y": 113,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 229,
+    "x": 114,
+    "y": 100,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 229,
+    "x": 127,
+    "y": 132,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 229,
+    "x": 61,
+    "y": 169,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 229,
+    "x": 68,
+    "y": 144,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 229,
+    "x": 85,
+    "y": 171,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 229,
+    "x": 149,
+    "y": 44,
+    "label": "background"
+  },
+  {
+    "frame": 229,
+    "x": 266,
+    "y": 23,
+    "label": "background"
+  },
+  {
+    "frame": 229,
+    "x": 279,
+    "y": 10,
+    "label": "background"
+  },
+  {
+    "frame": 229,
+    "x": 116,
+    "y": 6,
+    "label": "rbc"
+  },
+  {
+    "frame": 229,
+    "x": 60,
+    "y": 42,
+    "label": "rbc"
+  },
+  {
+    "frame": 234,
+    "x": 76,
+    "y": 147,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 234,
+    "x": 80,
+    "y": 129,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 234,
+    "x": 105,
+    "y": 147,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 234,
+    "x": 114,
+    "y": 114,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 234,
+    "x": 129,
+    "y": 122,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 234,
+    "x": 142,
+    "y": 82,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 234,
+    "x": 142,
+    "y": 108,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 234,
+    "x": 127,
+    "y": 86,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 234,
+    "x": 120,
+    "y": 147,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 234,
+    "x": 100,
+    "y": 129,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 234,
+    "x": 93,
+    "y": 187,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 234,
+    "x": 169,
+    "y": 209,
+    "label": "rbc"
+  },
+  {
+    "frame": 234,
+    "x": 157,
+    "y": 197,
+    "label": "rbc"
+  },
+  {
+    "frame": 234,
+    "x": 65,
+    "y": 48,
+    "label": "rbc"
+  },
+  {
+    "frame": 234,
+    "x": 58,
+    "y": 34,
+    "label": "rbc"
+  },
+  {
+    "frame": 234,
+    "x": 113,
+    "y": 6,
+    "label": "rbc"
+  },
+  {
+    "frame": 234,
+    "x": 167,
+    "y": 6,
+    "label": "rbc"
+  },
+  {
+    "frame": 234,
+    "x": 218,
+    "y": 30,
+    "label": "rbc"
+  },
+  {
+    "frame": 234,
+    "x": 144,
+    "y": 39,
+    "label": "background"
+  },
+  {
+    "frame": 239,
+    "x": 86,
+    "y": 182,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 239,
+    "x": 84,
+    "y": 158,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 239,
+    "x": 116,
+    "y": 144,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 239,
+    "x": 84,
+    "y": 134,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 239,
+    "x": 92,
+    "y": 120,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 239,
+    "x": 101,
+    "y": 143,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 239,
+    "x": 109,
+    "y": 123,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 239,
+    "x": 119,
+    "y": 109,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 239,
+    "x": 131,
+    "y": 128,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 239,
+    "x": 141,
+    "y": 99,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 239,
+    "x": 137,
+    "y": 80,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 239,
+    "x": 142,
+    "y": 64,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 239,
+    "x": 152,
+    "y": 74,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 239,
+    "x": 175,
+    "y": 181,
+    "label": "rbc"
+  },
+  {
+    "frame": 239,
+    "x": 180,
+    "y": 198,
+    "label": "rbc"
+  },
+  {
+    "frame": 239,
+    "x": 174,
+    "y": 211,
+    "label": "rbc"
+  },
+  {
+    "frame": 239,
+    "x": 116,
+    "y": 9,
+    "label": "rbc"
+  },
+  {
+    "frame": 239,
+    "x": 218,
+    "y": 31,
+    "label": "rbc"
+  },
+  {
+    "frame": 239,
+    "x": 221,
+    "y": 116,
+    "label": "background"
+  },
+  {
+    "frame": 239,
+    "x": 267,
+    "y": 16,
+    "label": "background"
+  },
+  {
+    "frame": 239,
+    "x": 282,
+    "y": 194,
+    "label": "background"
+  },
+  {
+    "frame": 239,
+    "x": 109,
+    "y": 57,
+    "label": "rbc"
+  },
+  {
+    "frame": 244,
+    "x": 112,
+    "y": 8,
+    "label": "rbc"
+  },
+  {
+    "frame": 244,
+    "x": 109,
+    "y": 120,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 244,
+    "x": 95,
+    "y": 150,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 244,
+    "x": 87,
+    "y": 164,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 244,
+    "x": 85,
+    "y": 179,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 244,
+    "x": 82,
+    "y": 141,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 244,
+    "x": 119,
+    "y": 145,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 244,
+    "x": 100,
+    "y": 132,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 244,
+    "x": 137,
+    "y": 126,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 244,
+    "x": 139,
+    "y": 103,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 244,
+    "x": 131,
+    "y": 91,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 244,
+    "x": 146,
+    "y": 63,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 244,
+    "x": 167,
+    "y": 72,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 244,
+    "x": 152,
+    "y": 78,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 244,
+    "x": 185,
+    "y": 95,
+    "label": "rbc"
+  },
+  {
+    "frame": 244,
+    "x": 170,
+    "y": 8,
+    "label": "rbc"
+  },
+  {
+    "frame": 244,
+    "x": 267,
+    "y": 16,
+    "label": "background"
+  },
+  {
+    "frame": 249,
+    "x": 85,
+    "y": 155,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 249,
+    "x": 106,
+    "y": 134,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 249,
+    "x": 109,
+    "y": 148,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 249,
+    "x": 130,
+    "y": 130,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 249,
+    "x": 108,
+    "y": 110,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 249,
+    "x": 143,
+    "y": 93,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 249,
+    "x": 158,
+    "y": 56,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 249,
+    "x": 91,
+    "y": 68,
+    "label": "rbc"
+  },
+  {
+    "frame": 249,
+    "x": 40,
+    "y": 55,
+    "label": "rbc"
+  },
+  {
+    "frame": 249,
+    "x": 113,
+    "y": 10,
+    "label": "rbc"
+  },
+  {
+    "frame": 249,
+    "x": 274,
+    "y": 20,
+    "label": "background"
+  },
+  {
+    "frame": 254,
+    "x": 133,
+    "y": 117,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 254,
+    "x": 103,
+    "y": 143,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 254,
+    "x": 99,
+    "y": 124,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 254,
+    "x": 116,
+    "y": 135,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 254,
+    "x": 121,
+    "y": 103,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 254,
+    "x": 144,
+    "y": 88,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 254,
+    "x": 139,
+    "y": 47,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 254,
+    "x": 173,
+    "y": 66,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 254,
+    "x": 156,
+    "y": 44,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 254,
+    "x": 159,
+    "y": 67,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 254,
+    "x": 279,
+    "y": 196,
+    "label": "background"
+  },
+  {
+    "frame": 254,
+    "x": 270,
+    "y": 23,
+    "label": "background"
+  },
+  {
+    "frame": 258,
+    "x": 164,
+    "y": 156,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 258,
+    "x": 143,
+    "y": 183,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 258,
+    "x": 124,
+    "y": 204,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 258,
+    "x": 129,
+    "y": 190,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 258,
+    "x": 159,
+    "y": 171,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 258,
+    "x": 140,
+    "y": 152,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 258,
+    "x": 169,
+    "y": 116,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 258,
+    "x": 179,
+    "y": 140,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 265,
+    "x": 86,
+    "y": 35,
+    "label": "background"
+  },
+  {
+    "frame": 265,
+    "x": 184,
+    "y": 12,
+    "label": "background"
+  },
+  {
+    "frame": 265,
+    "x": 137,
+    "y": 229,
+    "label": "background"
+  },
+  {
+    "frame": 270,
+    "x": 159,
+    "y": 143,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 270,
+    "x": 140,
+    "y": 176,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 270,
+    "x": 129,
+    "y": 193,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 270,
+    "x": 175,
+    "y": 156,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 270,
+    "x": 140,
+    "y": 147,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 270,
+    "x": 146,
+    "y": 112,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 270,
+    "x": 154,
+    "y": 91,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 270,
+    "x": 181,
+    "y": 93,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 270,
+    "x": 182,
+    "y": 121,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 270,
+    "x": 203,
+    "y": 109,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 270,
+    "x": 96,
+    "y": 35,
+    "label": "background"
+  },
+  {
+    "frame": 281,
+    "x": 169,
+    "y": 129,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 281,
+    "x": 192,
+    "y": 120,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 281,
+    "x": 158,
+    "y": 95,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 281,
+    "x": 167,
+    "y": 77,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 281,
+    "x": 176,
+    "y": 55,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 281,
+    "x": 197,
+    "y": 63,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 281,
+    "x": 190,
+    "y": 100,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 281,
+    "x": 90,
+    "y": 35,
+    "label": "background"
+  },
+  {
+    "frame": 281,
+    "x": 300,
+    "y": 80,
+    "label": "background"
+  },
+  {
+    "frame": 281,
+    "x": 133,
+    "y": 188,
+    "label": "background"
+  },
+  {
+    "frame": 281,
+    "x": 86,
+    "y": 229,
+    "label": "background"
+  },
+  {
+    "frame": 292,
+    "x": 185,
+    "y": 92,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 292,
+    "x": 146,
+    "y": 74,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 292,
+    "x": 158,
+    "y": 86,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 292,
+    "x": 168,
+    "y": 44,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 292,
+    "x": 153,
+    "y": 58,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 292,
+    "x": 165,
+    "y": 66,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 292,
+    "x": 188,
+    "y": 57,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 292,
+    "x": 205,
+    "y": 73,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 292,
+    "x": 183,
+    "y": 77,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 292,
+    "x": 171,
+    "y": 109,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 292,
+    "x": 163,
+    "y": 134,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 292,
+    "x": 131,
+    "y": 63,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 292,
+    "x": 203,
+    "y": 14,
+    "label": "rbc"
+  },
+  {
+    "frame": 292,
+    "x": 146,
+    "y": 171,
+    "label": "background"
+  },
+  {
+    "frame": 292,
+    "x": 137,
+    "y": 190,
+    "label": "background"
+  },
+  {
+    "frame": 292,
+    "x": 134,
+    "y": 219,
+    "label": "background"
+  },
+  {
+    "frame": 292,
+    "x": 96,
+    "y": 107,
+    "label": "rbc"
+  },
+  {
+    "frame": 292,
+    "x": 39,
+    "y": 196,
+    "label": "rbc"
+  },
+  {
+    "frame": 292,
+    "x": 310,
+    "y": 46,
+    "label": "rbc"
+  },
+  {
+    "frame": 303,
+    "x": 97,
+    "y": 66,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 303,
+    "x": 148,
+    "y": 76,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 303,
+    "x": 121,
+    "y": 62,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 303,
+    "x": 146,
+    "y": 61,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 303,
+    "x": 134,
+    "y": 73,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 303,
+    "x": 179,
+    "y": 56,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 303,
+    "x": 167,
+    "y": 40,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 303,
+    "x": 167,
+    "y": 83,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 303,
+    "x": 169,
+    "y": 98,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 303,
+    "x": 169,
+    "y": 119,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 303,
+    "x": 193,
+    "y": 79,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 303,
+    "x": 146,
+    "y": 150,
+    "label": "background"
+  },
+  {
+    "frame": 303,
+    "x": 149,
+    "y": 165,
+    "label": "background"
+  },
+  {
+    "frame": 303,
+    "x": 132,
+    "y": 196,
+    "label": "background"
+  },
+  {
+    "frame": 303,
+    "x": 134,
+    "y": 222,
+    "label": "background"
+  },
+  {
+    "frame": 303,
+    "x": 220,
+    "y": 219,
+    "label": "background"
+  },
+  {
+    "frame": 303,
+    "x": 233,
+    "y": 179,
+    "label": "background"
+  },
+  {
+    "frame": 303,
+    "x": 203,
+    "y": 21,
+    "label": "rbc"
+  },
+  {
+    "frame": 303,
+    "x": 119,
+    "y": 25,
+    "label": "rbc"
+  },
+  {
+    "frame": 303,
+    "x": 95,
+    "y": 143,
+    "label": "rbc"
+  },
+  {
+    "frame": 303,
+    "x": 55,
+    "y": 134,
+    "label": "rbc"
+  },
+  {
+    "frame": 303,
+    "x": 94,
+    "y": 105,
+    "label": "rbc"
+  },
+  {
+    "frame": 303,
+    "x": 310,
+    "y": 47,
+    "label": "rbc"
+  },
+  {
+    "frame": 314,
+    "x": 60,
+    "y": 55,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 314,
+    "x": 86,
+    "y": 43,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 314,
+    "x": 95,
+    "y": 63,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 314,
+    "x": 80,
+    "y": 57,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 314,
+    "x": 128,
+    "y": 60,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 314,
+    "x": 129,
+    "y": 77,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 314,
+    "x": 110,
+    "y": 53,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 314,
+    "x": 151,
+    "y": 61,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 314,
+    "x": 157,
+    "y": 76,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 314,
+    "x": 170,
+    "y": 67,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 314,
+    "x": 133,
+    "y": 196,
+    "label": "background"
+  },
+  {
+    "frame": 314,
+    "x": 144,
+    "y": 171,
+    "label": "background"
+  },
+  {
+    "frame": 314,
+    "x": 142,
+    "y": 150,
+    "label": "background"
+  },
+  {
+    "frame": 314,
+    "x": 219,
+    "y": 219,
+    "label": "background"
+  },
+  {
+    "frame": 314,
+    "x": 272,
+    "y": 11,
+    "label": "rbc"
+  },
+  {
+    "frame": 314,
+    "x": 267,
+    "y": 43,
+    "label": "rbc"
+  },
+  {
+    "frame": 314,
+    "x": 224,
+    "y": 32,
+    "label": "rbc"
+  },
+  {
+    "frame": 314,
+    "x": 95,
+    "y": 117,
+    "label": "rbc"
+  },
+  {
+    "frame": 324,
+    "x": 171,
+    "y": 99,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 324,
+    "x": 163,
+    "y": 83,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 324,
+    "x": 142,
+    "y": 82,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 324,
+    "x": 118,
+    "y": 64,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 324,
+    "x": 92,
+    "y": 38,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 324,
+    "x": 81,
+    "y": 63,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 324,
+    "x": 66,
+    "y": 65,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 324,
+    "x": 65,
+    "y": 51,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 324,
+    "x": 46,
+    "y": 63,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 324,
+    "x": 95,
+    "y": 79,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 324,
+    "x": 97,
+    "y": 57,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 324,
+    "x": 122,
+    "y": 80,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 324,
+    "x": 142,
+    "y": 57,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 324,
+    "x": 110,
+    "y": 98,
+    "label": "rbc"
+  },
+  {
+    "frame": 324,
+    "x": 272,
+    "y": 44,
+    "label": "rbc"
+  },
+  {
+    "frame": 324,
+    "x": 279,
+    "y": 14,
+    "label": "rbc"
+  },
+  {
+    "frame": 324,
+    "x": 311,
+    "y": 49,
+    "label": "rbc"
+  },
+  {
+    "frame": 336,
+    "x": 77,
+    "y": 200,
+    "label": "background"
+  },
+  {
+    "frame": 336,
+    "x": 146,
+    "y": 109,
+    "label": "background"
+  },
+  {
+    "frame": 336,
+    "x": 91,
+    "y": 75,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 336,
+    "x": 72,
+    "y": 71,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 336,
+    "x": 50,
+    "y": 72,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 336,
+    "x": 38,
+    "y": 61,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 336,
+    "x": 71,
+    "y": 41,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 336,
+    "x": 92,
+    "y": 36,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 336,
+    "x": 87,
+    "y": 59,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 336,
+    "x": 109,
+    "y": 52,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 336,
+    "x": 133,
+    "y": 69,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 336,
+    "x": 120,
+    "y": 78,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 336,
+    "x": 197,
+    "y": 29,
+    "label": "rbc"
+  },
+  {
+    "frame": 336,
+    "x": 183,
+    "y": 38,
+    "label": "rbc"
+  },
+  {
+    "frame": 336,
+    "x": 182,
+    "y": 19,
+    "label": "rbc"
+  },
+  {
+    "frame": 336,
+    "x": 277,
+    "y": 18,
+    "label": "rbc"
+  },
+  {
+    "frame": 336,
+    "x": 264,
+    "y": 10,
+    "label": "rbc"
+  },
+  {
+    "frame": 336,
+    "x": 309,
+    "y": 42,
+    "label": "rbc"
+  },
+  {
+    "frame": 336,
+    "x": 236,
+    "y": 47,
+    "label": "rbc"
+  },
+  {
+    "frame": 336,
+    "x": 222,
+    "y": 30,
+    "label": "rbc"
+  },
+  {
+    "frame": 336,
+    "x": 262,
+    "y": 44,
+    "label": "rbc"
+  },
+  {
+    "frame": 346,
+    "x": 102,
+    "y": 61,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 346,
+    "x": 118,
+    "y": 74,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 346,
+    "x": 59,
+    "y": 76,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 346,
+    "x": 41,
+    "y": 69,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 346,
+    "x": 69,
+    "y": 55,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 346,
+    "x": 78,
+    "y": 75,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 346,
+    "x": 96,
+    "y": 31,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 346,
+    "x": 63,
+    "y": 143,
+    "label": "rbc"
+  },
+  {
+    "frame": 346,
+    "x": 106,
+    "y": 164,
+    "label": "rbc"
+  },
+  {
+    "frame": 346,
+    "x": 98,
+    "y": 116,
+    "label": "rbc"
+  },
+  {
+    "frame": 346,
+    "x": 311,
+    "y": 46,
+    "label": "rbc"
+  },
+  {
+    "frame": 346,
+    "x": 275,
+    "y": 10,
+    "label": "rbc"
+  },
+  {
+    "frame": 346,
+    "x": 221,
+    "y": 36,
+    "label": "rbc"
+  },
+  {
+    "frame": 346,
+    "x": 267,
+    "y": 45,
+    "label": "rbc"
+  },
+  {
+    "frame": 356,
+    "x": 68,
+    "y": 74,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 356,
+    "x": 45,
+    "y": 59,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 356,
+    "x": 70,
+    "y": 52,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 356,
+    "x": 90,
+    "y": 62,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 356,
+    "x": 98,
+    "y": 19,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 356,
+    "x": 112,
+    "y": 72,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 356,
+    "x": 91,
+    "y": 40,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 356,
+    "x": 109,
+    "y": 52,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 356,
+    "x": 59,
+    "y": 147,
+    "label": "rbc"
+  },
+  {
+    "frame": 356,
+    "x": 105,
+    "y": 162,
+    "label": "rbc"
+  },
+  {
+    "frame": 356,
+    "x": 190,
+    "y": 31,
+    "label": "rbc"
+  },
+  {
+    "frame": 356,
+    "x": 270,
+    "y": 17,
+    "label": "rbc"
+  },
+  {
+    "frame": 356,
+    "x": 308,
+    "y": 44,
+    "label": "rbc"
+  },
+  {
+    "frame": 356,
+    "x": 144,
+    "y": 71,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 366,
+    "x": 121,
+    "y": 148,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 366,
+    "x": 87,
+    "y": 143,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 366,
+    "x": 92,
+    "y": 124,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 366,
+    "x": 118,
+    "y": 131,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 366,
+    "x": 106,
+    "y": 143,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 366,
+    "x": 125,
+    "y": 115,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 366,
+    "x": 115,
+    "y": 101,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 366,
+    "x": 131,
+    "y": 91,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 366,
+    "x": 139,
+    "y": 126,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 366,
+    "x": 146,
+    "y": 145,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 366,
+    "x": 171,
+    "y": 140,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 366,
+    "x": 147,
+    "y": 107,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 366,
+    "x": 137,
+    "y": 78,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 366,
+    "x": 150,
+    "y": 91,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 366,
+    "x": 226,
+    "y": 100,
+    "label": "rbc"
+  },
+  {
+    "frame": 366,
+    "x": 240,
+    "y": 108,
+    "label": "rbc"
+  },
+  {
+    "frame": 366,
+    "x": 244,
+    "y": 91,
+    "label": "rbc"
+  },
+  {
+    "frame": 366,
+    "x": 165,
+    "y": 188,
+    "label": "rbc"
+  },
+  {
+    "frame": 366,
+    "x": 157,
+    "y": 10,
+    "label": "rbc"
+  },
+  {
+    "frame": 366,
+    "x": 112,
+    "y": 59,
+    "label": "rbc"
+  },
+  {
+    "frame": 366,
+    "x": 302,
+    "y": 18,
+    "label": "rbc"
+  },
+  {
+    "frame": 366,
+    "x": 307,
+    "y": 128,
+    "label": "rbc"
+  },
+  {
+    "frame": 366,
+    "x": 312,
+    "y": 88,
+    "label": "rbc"
+  },
+  {
+    "frame": 376,
+    "x": 147,
+    "y": 131,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 376,
+    "x": 121,
+    "y": 148,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 376,
+    "x": 101,
+    "y": 129,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 376,
+    "x": 105,
+    "y": 114,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 376,
+    "x": 137,
+    "y": 86,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 376,
+    "x": 157,
+    "y": 69,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 376,
+    "x": 127,
+    "y": 113,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 376,
+    "x": 175,
+    "y": 141,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 376,
+    "x": 148,
+    "y": 104,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 376,
+    "x": 188,
+    "y": 111,
+    "label": "rbc"
+  },
+  {
+    "frame": 376,
+    "x": 243,
+    "y": 93,
+    "label": "rbc"
+  },
+  {
+    "frame": 376,
+    "x": 306,
+    "y": 121,
+    "label": "rbc"
+  },
+  {
+    "frame": 376,
+    "x": 315,
+    "y": 86,
+    "label": "rbc"
+  },
+  {
+    "frame": 376,
+    "x": 311,
+    "y": 22,
+    "label": "rbc"
+  },
+  {
+    "frame": 376,
+    "x": 149,
+    "y": 8,
+    "label": "rbc"
+  },
+  {
+    "frame": 376,
+    "x": 113,
+    "y": 54,
+    "label": "rbc"
+  },
+  {
+    "frame": 386,
+    "x": 167,
+    "y": 139,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 386,
+    "x": 146,
+    "y": 139,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 386,
+    "x": 121,
+    "y": 144,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 386,
+    "x": 116,
+    "y": 114,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 386,
+    "x": 134,
+    "y": 114,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 386,
+    "x": 146,
+    "y": 64,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 386,
+    "x": 128,
+    "y": 76,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 386,
+    "x": 147,
+    "y": 97,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 386,
+    "x": 159,
+    "y": 85,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 386,
+    "x": 191,
+    "y": 102,
+    "label": "rbc"
+  },
+  {
+    "frame": 386,
+    "x": 234,
+    "y": 95,
+    "label": "rbc"
+  },
+  {
+    "frame": 386,
+    "x": 207,
+    "y": 104,
+    "label": "rbc"
+  },
+  {
+    "frame": 386,
+    "x": 156,
+    "y": 10,
+    "label": "rbc"
+  },
+  {
+    "frame": 386,
+    "x": 298,
+    "y": 19,
+    "label": "rbc"
+  },
+  {
+    "frame": 386,
+    "x": 309,
+    "y": 83,
+    "label": "rbc"
+  },
+  {
+    "frame": 386,
+    "x": 311,
+    "y": 124,
+    "label": "rbc"
+  },
+  {
+    "frame": 386,
+    "x": 25,
+    "y": 198,
+    "label": "background"
+  },
+  {
+    "frame": 386,
+    "x": 108,
+    "y": 7,
+    "label": "background"
+  },
+  {
+    "frame": 386,
+    "x": 275,
+    "y": 14,
+    "label": "background"
+  },
+  {
+    "frame": 386,
+    "x": 101,
+    "y": 219,
+    "label": "rbc"
+  },
+  {
+    "frame": 396,
+    "x": 159,
+    "y": 138,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 396,
+    "x": 127,
+    "y": 134,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 396,
+    "x": 113,
+    "y": 116,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 396,
+    "x": 140,
+    "y": 97,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 396,
+    "x": 118,
+    "y": 88,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 396,
+    "x": 133,
+    "y": 63,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 396,
+    "x": 158,
+    "y": 65,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 396,
+    "x": 161,
+    "y": 87,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 396,
+    "x": 201,
+    "y": 99,
+    "label": "rbc"
+  },
+  {
+    "frame": 396,
+    "x": 232,
+    "y": 102,
+    "label": "rbc"
+  },
+  {
+    "frame": 396,
+    "x": 273,
+    "y": 101,
+    "label": "rbc"
+  },
+  {
+    "frame": 396,
+    "x": 311,
+    "y": 126,
+    "label": "rbc"
+  },
+  {
+    "frame": 396,
+    "x": 308,
+    "y": 81,
+    "label": "rbc"
+  },
+  {
+    "frame": 396,
+    "x": 302,
+    "y": 21,
+    "label": "rbc"
+  },
+  {
+    "frame": 406,
+    "x": 156,
+    "y": 131,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 406,
+    "x": 121,
+    "y": 129,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 406,
+    "x": 112,
+    "y": 114,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 406,
+    "x": 123,
+    "y": 92,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 406,
+    "x": 142,
+    "y": 113,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 406,
+    "x": 127,
+    "y": 45,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 406,
+    "x": 142,
+    "y": 62,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 406,
+    "x": 201,
+    "y": 101,
+    "label": "rbc"
+  },
+  {
+    "frame": 406,
+    "x": 241,
+    "y": 90,
+    "label": "rbc"
+  },
+  {
+    "frame": 406,
+    "x": 316,
+    "y": 84,
+    "label": "rbc"
+  },
+  {
+    "frame": 406,
+    "x": 308,
+    "y": 124,
+    "label": "rbc"
+  },
+  {
+    "frame": 406,
+    "x": 309,
+    "y": 23,
+    "label": "rbc"
+  },
+  {
+    "frame": 406,
+    "x": 158,
+    "y": 7,
+    "label": "rbc"
+  },
+  {
+    "frame": 406,
+    "x": 53,
+    "y": 62,
+    "label": "rbc"
+  },
+  {
+    "frame": 406,
+    "x": 52,
+    "y": 10,
+    "label": "rbc"
+  },
+  {
+    "frame": 410,
+    "x": 25,
+    "y": 195,
+    "label": "background"
+  },
+  {
+    "frame": 410,
+    "x": 150,
+    "y": 130,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 410,
+    "x": 146,
+    "y": 93,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 410,
+    "x": 108,
+    "y": 74,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 410,
+    "x": 124,
+    "y": 36,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 410,
+    "x": 139,
+    "y": 65,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 410,
+    "x": 156,
+    "y": 63,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 410,
+    "x": 116,
+    "y": 52,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 410,
+    "x": 102,
+    "y": 43,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 410,
+    "x": 124,
+    "y": 90,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 410,
+    "x": 134,
+    "y": 123,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 410,
+    "x": 113,
+    "y": 119,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 410,
+    "x": 104,
+    "y": 93,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 410,
+    "x": 117,
+    "y": 105,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 410,
+    "x": 187,
+    "y": 100,
+    "label": "rbc"
+  },
+  {
+    "frame": 410,
+    "x": 239,
+    "y": 93,
+    "label": "rbc"
+  },
+  {
+    "frame": 410,
+    "x": 313,
+    "y": 122,
+    "label": "rbc"
+  },
+  {
+    "frame": 410,
+    "x": 312,
+    "y": 85,
+    "label": "rbc"
+  },
+  {
+    "frame": 410,
+    "x": 304,
+    "y": 21,
+    "label": "rbc"
+  },
+  {
+    "frame": 410,
+    "x": 159,
+    "y": 4,
+    "label": "rbc"
+  },
+  {
+    "frame": 420,
+    "x": 144,
+    "y": 122,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 420,
+    "x": 129,
+    "y": 119,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 420,
+    "x": 112,
+    "y": 103,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 420,
+    "x": 118,
+    "y": 83,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 420,
+    "x": 129,
+    "y": 63,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 420,
+    "x": 105,
+    "y": 48,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 420,
+    "x": 88,
+    "y": 44,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 420,
+    "x": 119,
+    "y": 37,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 420,
+    "x": 146,
+    "y": 61,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 420,
+    "x": 148,
+    "y": 86,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 420,
+    "x": 137,
+    "y": 95,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 420,
+    "x": 135,
+    "y": 76,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 420,
+    "x": 111,
+    "y": 70,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 420,
+    "x": 129,
+    "y": 47,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 420,
+    "x": 202,
+    "y": 95,
+    "label": "rbc"
+  },
+  {
+    "frame": 420,
+    "x": 244,
+    "y": 95,
+    "label": "rbc"
+  },
+  {
+    "frame": 420,
+    "x": 306,
+    "y": 124,
+    "label": "rbc"
+  },
+  {
+    "frame": 420,
+    "x": 315,
+    "y": 86,
+    "label": "rbc"
+  },
+  {
+    "frame": 420,
+    "x": 153,
+    "y": 6,
+    "label": "rbc"
+  },
+  {
+    "frame": 420,
+    "x": 27,
+    "y": 190,
+    "label": "background"
+  },
+  {
+    "frame": 426,
+    "x": 125,
+    "y": 107,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 426,
+    "x": 144,
+    "y": 93,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 426,
+    "x": 114,
+    "y": 59,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 426,
+    "x": 91,
+    "y": 33,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 426,
+    "x": 106,
+    "y": 73,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 426,
+    "x": 112,
+    "y": 91,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 426,
+    "x": 120,
+    "y": 43,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 426,
+    "x": 139,
+    "y": 74,
+    "label": "neutrophil"
+  },
+  {
+    "frame": 426,
+    "x": 194,
+    "y": 105,
+    "label": "rbc"
+  },
+  {
+    "frame": 426,
+    "x": 234,
+    "y": 97,
+    "label": "rbc"
+  },
+  {
+    "frame": 426,
+    "x": 307,
+    "y": 123,
+    "label": "rbc"
+  },
+  {
+    "frame": 426,
+    "x": 310,
+    "y": 83,
+    "label": "rbc"
+  },
+  {
+    "frame": 426,
+    "x": 303,
+    "y": 19,
+    "label": "rbc"
+  },
+  {
+    "frame": 426,
+    "x": 24,
+    "y": 195,
     "label": "background"
   }
 ]
