@@ -651,6 +651,65 @@ def main():
     print("  Pass 2: temporal smoothing…")
     smooth_masks = smooth_masks_temporally(raw_masks, jump_frames, n_frames)
 
+    # ── Pass 2b: per-component flicker suppression ───────────────────────────
+    # Kill any RBC connected component that doesn't persist across time.
+    # Strategy: for each component in frame i, check a ±FLICKER_WINDOW window.
+    # A component is a "ghost" if fewer than FLICKER_MIN_HITS neighbours contain
+    # a region with meaningful pixel overlap (>= FLICKER_OVERLAP_FRAC * area).
+    # This catches both single-frame ghosts and short 2-3 frame bursts.
+    FLICKER_WINDOW       = 3    # frames each side to check
+    FLICKER_MIN_HITS     = 2    # must overlap with at least this many neighbours
+    FLICKER_OVERLAP_FRAC = 0.15 # overlap must be >= 15% of the component's area
+
+    print("  Pass 2b: flicker suppression…")
+    smooth_masks = list(smooth_masks)
+
+    def seg_of(fi):
+        return segment_for_frame(fi, jump_frames, n_frames)
+
+    for i in range(n_frames):
+        if i in jump_frames:
+            continue
+        neutro_mask, rbc_mask = smooth_masks[i]
+        if rbc_mask is None or rbc_mask.max() == 0:
+            continue
+
+        seg_s, seg_e = seg_of(i)
+
+        # Collect neighbour masks in same segment, within FLICKER_WINDOW
+        neighbour_masks = []
+        for delta in range(-FLICKER_WINDOW, FLICKER_WINDOW + 1):
+            if delta == 0:
+                continue
+            ni = i + delta
+            if ni < 0 or ni >= n_frames:
+                continue
+            if ni in jump_frames:
+                continue
+            if seg_of(ni)[0] != seg_s:
+                continue
+            neighbour_masks.append(smooth_masks[ni][1])
+
+        if len(neighbour_masks) < FLICKER_MIN_HITS:
+            continue  # not enough context, leave mask alone
+
+        # Check each connected component in this frame's RBC mask
+        n_c, lbl_c, stats_c, _ = cv2.connectedComponentsWithStats(rbc_mask)
+        rbc_mask_filtered = rbc_mask.copy()
+        for l in range(1, n_c):
+            comp = (lbl_c == l).astype(np.uint8) * 255
+            area = int(stats_c[l, cv2.CC_STAT_AREA])
+            min_overlap = max(1, int(area * FLICKER_OVERLAP_FRAC))
+
+            hits = sum(
+                1 for nm in neighbour_masks
+                if int(cv2.bitwise_and(comp, nm).sum()) // 255 >= min_overlap
+            )
+            if hits < FLICKER_MIN_HITS:
+                rbc_mask_filtered[lbl_c == l] = 0
+
+        smooth_masks[i] = (neutro_mask, rbc_mask_filtered)
+
     # ── Pass 3: render output video ──────────────────────────────────────────
     print("  Pass 3: rendering…")
     out_frames = []
