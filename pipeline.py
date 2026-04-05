@@ -49,14 +49,28 @@ def preprocess(frame_rgb):
 # ─── Stage jump detection ──────────────────────────────────────────────────────
 
 def find_stage_jumps(frames, threshold=STAGE_JUMP_THRESH):
-    jumps = set()
+    """
+    Detect stage jump frames. Only the FIRST frame of each consecutive run
+    of high-diff frames is marked as a jump. Subsequent frames in a run
+    have high diff only because the preceding frame was displaced — they are
+    themselves normal (settled) frames and should not be skipped.
+    """
     prev = None
+    raw_jumps = []
     for i, frame in enumerate(frames):
         gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
         if prev is not None:
             if float(cv2.absdiff(gray, prev).astype(np.float32).mean()) > threshold:
-                jumps.add(i)
+                raw_jumps.append(i)
         prev = gray
+
+    # Keep only the first frame of each consecutive cluster
+    jumps = set()
+    prev_j = -2
+    for j in raw_jumps:
+        if j != prev_j + 1:
+            jumps.add(j)
+        prev_j = j
     return jumps
 
 
@@ -443,65 +457,65 @@ def segment_neutrophil(frame_bgr, enhanced, corrections, frame_idx,
 
 def smooth_masks_temporally(masks, jump_frames, n_frames, ratio_thresh=FLICKER_RATIO):
     """
-    Post-process all masks to suppress single-frame spikes.
-    A frame whose mask area differs by >ratio_thresh from the rolling median
-    of its neighbours (within segment) is replaced by the median mask.
-
-    masks: list of (neutro_mask, rbc_mask) numpy arrays
-    Returns: list of (neutro_mask, rbc_mask)
+    Suppress single-frame mask spikes using area-based outlier detection.
+    
+    If a frame's mask area is an outlier (>ratio_thresh times the rolling
+    median of its neighbours within the same segment), replace it with the
+    nearest non-outlier frame's mask. This handles:
+    - Neutrophil suddenly expanding for 1 frame (frame 70 type error)
+    - RBC regions blinking in/out for 1 frame
+    
+    Uses the actual mask from the best neighbouring frame (not pixel median)
+    so the replacement is always a real, spatially coherent mask.
     """
     W = TEMPORAL_WINDOW
 
     def area(m):
         return int(m.sum()) // 255
 
-    def segment_of(fi):
+    def seg_of(fi):
         return segment_for_frame(fi, jump_frames, n_frames)
 
-    smoothed = list(masks)
+    smoothed = [list(m) for m in masks]
 
-    for fi in range(n_frames):
-        seg_s, seg_e = segment_of(fi)
-        if fi in jump_frames:
-            continue
-
-        for mask_idx in range(2):  # 0=neutro, 1=rbc
-            cur_area = area(masks[fi][mask_idx])
-            if cur_area == 0:
+    for mask_idx in range(2):  # 0=neutro, 1=rbc
+        for fi in range(n_frames):
+            if fi in jump_frames:
                 continue
+            seg_s, seg_e = seg_of(fi)
+            cur_area = area(masks[fi][mask_idx])
 
-            # Collect neighbour areas in same segment
-            neighbour_areas = []
-            neighbour_masks = []
+            # Collect neighbour areas/frames in same segment
+            neighbours = []
             for delta in range(-W, W+1):
-                nfi = fi + delta
                 if delta == 0: continue
+                nfi = fi + delta
                 if nfi < 0 or nfi >= n_frames: continue
-                ns, ne = segment_of(nfi)
-                if ns != seg_s: continue
+                if seg_of(nfi)[0] != seg_s: continue
                 if nfi in jump_frames: continue
                 na = area(masks[nfi][mask_idx])
-                if na > 0:
-                    neighbour_areas.append(na)
-                    neighbour_masks.append(masks[nfi][mask_idx])
+                neighbours.append((abs(delta), nfi, na))
 
-            if len(neighbour_areas) < 3:
+            if len(neighbours) < 3:
                 continue
 
-            median_area = float(np.median(neighbour_areas))
-            if median_area < 10:
+            areas = [na for _, _, na in neighbours]
+            median_area = float(np.median(areas))
+            if median_area < 50:
                 continue
 
-            ratio = cur_area / median_area
+            # Check if current frame is an outlier
+            ratio = (cur_area / median_area) if median_area > 0 else 1.0
             if ratio > ratio_thresh or ratio < 1.0 / ratio_thresh:
-                # Replace with median of neighbour masks (pixel-wise median)
-                stack = np.stack(neighbour_masks, axis=0).astype(np.float32)
-                median_mask = (np.median(stack, axis=0) > 127).astype(np.uint8) * 255
-                cur = list(smoothed[fi])
-                cur[mask_idx] = median_mask
-                smoothed[fi] = tuple(cur)
+                # Replace with mask from the nearest non-outlier neighbour
+                candidates = sorted(neighbours, key=lambda x: x[0])
+                for _, nfi, na in candidates:
+                    nratio = (na / median_area) if median_area > 0 else 1.0
+                    if 1.0/ratio_thresh <= nratio <= ratio_thresh:
+                        smoothed[fi][mask_idx] = masks[nfi][mask_idx].copy()
+                        break
 
-    return smoothed
+    return [tuple(m) for m in smoothed]
 
 
 # ─── Overlay rendering ─────────────────────────────────────────────────────────
@@ -640,6 +654,19 @@ def main():
             draw_legend(out, stage_jump=True)
         else:
             neutro_mask, rbc_mask = smooth_masks[i]
+
+            # Fill donut holes in RBC mask (applied after smoothing)
+            rbc_mask = ndimage.binary_fill_holes(rbc_mask > 0).astype(np.uint8) * 255
+
+            # Remove tiny RBC fragments below minimum size
+            min_rbc_px = int(np.pi * (args.rbc_radius * 0.50) ** 2)
+            n_c, lbl_c, stats_c, _ = cv2.connectedComponentsWithStats(rbc_mask)
+            rbc_mask_clean = np.zeros_like(rbc_mask)
+            for l in range(1, n_c):
+                if stats_c[l, cv2.CC_STAT_AREA] >= min_rbc_px:
+                    rbc_mask_clean[lbl_c == l] = 255
+            rbc_mask = rbc_mask_clean
+
             out = draw_overlay(frame, rbc_mask, neutro_mask)
             draw_legend(out, tier=tiers[i])
         out_frames.append(out)
