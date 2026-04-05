@@ -1,11 +1,15 @@
 """
-Cell Slicer — Segmentation Pipeline v6
+Cell Slicer — Segmentation Pipeline v7
 ========================================
-Correction-driven segmentation:
-  - Neutrophil: GrabCut seeded from ALL correction points on the frame
-    (or interpolated from neighbouring corrected frames within the same segment)
-  - RBCs: disc masks centred on RBC correction points + watershed for boundaries
-  - Corrections never propagate across stage jump frames
+Correction-driven segmentation with temporal smoothing.
+
+Key design:
+- Correction points are seeds for actual image-based segmentation (not blunt discs)
+- RBCs: correction point → flood-fill to cell contour via watershed
+- Neutrophil: GrabCut seeded by all interpolated correction points
+- Temporal smoothing: large frame-to-frame mask changes are suppressed
+  (physical cells don't disappear for one frame then reappear)
+- Stage jumps partition the video; corrections never propagate across jumps
 
 Usage:
     python3 pipeline.py [--build-density-map] [--corrections PATH] [options]
@@ -26,10 +30,12 @@ COLOUR_RBC_RGB        = (220, 60,  60)
 COLOUR_NEUTROPHIL_RGB = (40,  220, 40)
 ALPHA_FILL            = 0.40
 GRABCUT_ITER          = 5
-MOTION_LAG            = 8
 STAGE_JUMP_THRESH     = 18.0
 MIN_NEUTROPHIL_PX     = 300
-RBC_DISC_R            = 18     # radius of RBC correction discs in px
+
+# Temporal smoothing: if area ratio > FLICKER_RATIO vs rolling median, blend
+FLICKER_RATIO         = 2.0
+TEMPORAL_WINDOW       = 5   # frames each side for smoothing look-ahead/look-back
 
 
 # ─── Preprocessing ─────────────────────────────────────────────────────────────
@@ -55,7 +61,7 @@ def find_stage_jumps(frames, threshold=STAGE_JUMP_THRESH):
 
 
 def segment_for_frame(frame_idx, jump_frames, n_frames):
-    """Return (seg_start, seg_end) for frame_idx, bounded by jump frames."""
+    """(seg_start, seg_end) for frame_idx, not crossing any jump frame."""
     jumps = sorted(jump_frames)
     start = 0
     for j in jumps:
@@ -73,9 +79,8 @@ def load_corrections(path):
     valid = [m for m in data
              if {'frame','x','y','label'} <= set(m.keys())
              and m['label'] in ('neutrophil','rbc','background')]
-    print(f"  Loaded {len(valid)} corrections ({sum(1 for m in valid if m['label']=='neutrophil')} neutrophil, "
-          f"{sum(1 for m in valid if m['label']=='rbc')} rbc, "
-          f"{sum(1 for m in valid if m['label']=='background')} background)")
+    counts = {l: sum(1 for m in valid if m['label']==l) for l in ('neutrophil','rbc','background')}
+    print(f"  Loaded {len(valid)} corrections: {counts}")
     return valid
 
 
@@ -84,7 +89,6 @@ def corrections_for_frame(corrections, frame_idx):
 
 
 def annotated_frames_in_segment(corrections, seg_start, seg_end, label=None):
-    """Sorted list of annotated frame indices within [seg_start, seg_end]."""
     frames = set()
     for c in corrections:
         if seg_start <= c['frame'] <= seg_end:
@@ -95,7 +99,7 @@ def annotated_frames_in_segment(corrections, seg_start, seg_end, label=None):
 
 # ─── Interpolation helpers ─────────────────────────────────────────────────────
 
-def centroid_of_corrections(corrections, frame_idx, label):
+def centroid_of(corrections, frame_idx, label):
     pts = [(c['x'], c['y']) for c in corrections
            if c['frame'] == frame_idx and c['label'] == label]
     if not pts:
@@ -105,18 +109,22 @@ def centroid_of_corrections(corrections, frame_idx, label):
 
 def interpolate_points(corrections, frame_idx, label, seg_start, seg_end):
     """
-    Return interpolated seed points for `label` at `frame_idx`.
-    Finds the nearest annotated frames on either side within the segment,
-    and linearly shifts the correction points by the centroid displacement.
+    Return correction points for `label` at `frame_idx`, either directly
+    (if this frame is annotated) or shifted from the nearest annotated frame
+    by the inter-frame centroid displacement.
+    Never crosses segment boundaries (stage jumps).
     """
     ann = annotated_frames_in_segment(corrections, seg_start, seg_end, label=label)
     if not ann:
         return []
 
-    if frame_idx in ann:
-        return [(c['x'], c['y']) for c in corrections
-                if c['frame'] == frame_idx and c['label'] == label]
+    # Direct match
+    direct = [(c['x'], c['y']) for c in corrections
+              if c['frame'] == frame_idx and c['label'] == label]
+    if direct:
+        return direct
 
+    # Find bracketing annotated frames
     before = [f for f in ann if f < frame_idx]
     after  = [f for f in ann if f > frame_idx]
 
@@ -128,115 +136,33 @@ def interpolate_points(corrections, frame_idx, label, seg_start, seg_end):
     else:
         f0, f1, t = min(after), min(after), 0.0
 
-    # Reference frame = whichever is closer
-    ref_frame = f0 if (frame_idx - f0 <= f1 - frame_idx) else f1
-    ref_t     = 0.0 if ref_frame == f0 else 1.0
-
-    c0 = centroid_of_corrections(corrections, f0, label)
-    c1 = centroid_of_corrections(corrections, f1, label) if f0 != f1 else c0
+    # Use closer frame as reference, shift by interpolated centroid delta
+    ref_frame = f0 if abs(frame_idx - f0) <= abs(frame_idx - f1) else f1
+    c0 = centroid_of(corrections, f0, label)
+    c1 = centroid_of(corrections, f1, label) if f0 != f1 else c0
     if c0 is None or c1 is None:
         return []
 
-    # Interpolate centroid displacement
     interp_cx = c0[0] + t * (c1[0] - c0[0])
     interp_cy = c0[1] + t * (c1[1] - c0[1])
-    ref_cx, ref_cy = (c0 if ref_frame == f0 else c1)
+    ref_c = c0 if ref_frame == f0 else c1
+    dx, dy = interp_cx - ref_c[0], interp_cy - ref_c[1]
 
-    dx = interp_cx - ref_cx
-    dy = interp_cy - ref_cy
-
-    # Shift all correction points from the reference frame
     ref_pts = [(c['x'], c['y']) for c in corrections
                if c['frame'] == ref_frame and c['label'] == label]
     return [(x + dx, y + dy) for x, y in ref_pts]
 
 
-# ─── GrabCut ───────────────────────────────────────────────────────────────────
+# ─── Cell body mask ────────────────────────────────────────────────────────────
 
-def grabcut_neutrophil(frame_bgr, enhanced, neutro_pts, bg_pts, rbc_pts,
-                       seed_r=8, n_iter=GRABCUT_ITER):
-    """
-    GrabCut with full correction point sets as seeds.
-    Returns single-largest-component binary mask.
-    """
-    h, w = enhanced.shape
-    if not neutro_pts:
-        return np.zeros((h, w), np.uint8)
-
-    gc = np.full((h, w), cv2.GC_PR_BGD, np.uint8)
-    gc[enhanced > 190] = cv2.GC_BGD
-
-    for x, y in neutro_pts:
-        xi, yi = int(np.clip(x, 0, w-1)), int(np.clip(y, 0, h-1))
-        cv2.circle(gc, (xi, yi), seed_r, cv2.GC_FGD, -1)
-    for x, y in bg_pts:
-        xi, yi = int(np.clip(x, 0, w-1)), int(np.clip(y, 0, h-1))
-        cv2.circle(gc, (xi, yi), seed_r, cv2.GC_BGD, -1)
-    for x, y in rbc_pts:
-        xi, yi = int(np.clip(x, 0, w-1)), int(np.clip(y, 0, h-1))
-        cv2.circle(gc, (xi, yi), seed_r, cv2.GC_PR_BGD, -1)
-
-    bgd = np.zeros((1, 65), np.float64)
-    fgd = np.zeros((1, 65), np.float64)
-    try:
-        cv2.grabCut(frame_bgr, gc, None, bgd, fgd, n_iter, cv2.GC_INIT_WITH_MASK)
-    except Exception:
-        return np.zeros((h, w), np.uint8)
-
-    raw = np.where((gc == cv2.GC_FGD) | (gc == cv2.GC_PR_FGD), 255, 0).astype(np.uint8)
-
-    # Keep only largest connected component ≥ MIN_NEUTROPHIL_PX
-    n_c, lbl, stats, _ = cv2.connectedComponentsWithStats(raw)
-    if n_c <= 1:
-        return np.zeros((h, w), np.uint8)
-    best = int(np.argmax(stats[1:, cv2.CC_STAT_AREA])) + 1
-    if stats[best, cv2.CC_STAT_AREA] < MIN_NEUTROPHIL_PX:
-        return np.zeros((h, w), np.uint8)
-    mask = ((lbl == best) * 255).astype(np.uint8)
-    return ndimage.binary_fill_holes(mask).astype(np.uint8) * 255
-
-
-# ─── Neutrophil segmentation ───────────────────────────────────────────────────
-
-def segment_neutrophil(frame_bgr, enhanced, corrections, frame_idx,
-                       seg_start, seg_end, density, h, w):
-    """
-    Tier 1 if direct neutrophil corrections exist for this frame.
-    Tier 2 if interpolated corrections available within segment.
-    Tier 3 (empty) otherwise.
-    """
-    # Gather seed points
-    neutro_pts = interpolate_points(corrections, frame_idx, 'neutrophil', seg_start, seg_end)
-    bg_pts     = interpolate_points(corrections, frame_idx, 'background', seg_start, seg_end)
-    rbc_pts    = interpolate_points(corrections, frame_idx, 'rbc',        seg_start, seg_end)
-
-    direct = any(c['frame'] == frame_idx and c['label'] == 'neutrophil'
-                 for c in corrections)
-    tier   = 1 if direct else (2 if neutro_pts else 3)
-
-    if not neutro_pts:
-        return np.zeros((h, w), np.uint8), 3
-
-    # Supplement BG seeds with high-density RBC map
-    ry, rx = np.where(density >= 0.20)
-    if len(ry) > 30:
-        idx = np.random.choice(len(ry), 30, replace=False)
-        rbc_pts = rbc_pts + list(zip(rx[idx].tolist(), ry[idx].tolist()))
-
-    mask = grabcut_neutrophil(frame_bgr, enhanced, neutro_pts, bg_pts, rbc_pts)
-
-    # Sanity: mask should cover at least one seed point
-    for x, y in neutro_pts:
-        xi, yi = int(np.clip(x, 0, w-1)), int(np.clip(y, 0, h-1))
-        if mask[yi, xi] > 0:
-            return mask, tier
-
-    # If not, fall back to painted seed discs filled in
-    fallback = np.zeros((h, w), np.uint8)
-    for x, y in neutro_pts:
-        cv2.circle(fallback, (int(np.clip(x,0,w-1)), int(np.clip(y,0,h-1))), 12, 255, -1)
-    fallback = ndimage.binary_fill_holes(fallback > 0).astype(np.uint8) * 255
-    return fallback, tier
+def get_cell_bodies(enhanced, dark_thresh=100):
+    """Binary mask of all cell material (not background)."""
+    _, dark = cv2.threshold(enhanced, dark_thresh, 255, cv2.THRESH_BINARY_INV)
+    k3 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3,3))
+    k5 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5,5))
+    closed = cv2.morphologyEx(dark, cv2.MORPH_CLOSE, k3, iterations=2)
+    filled = ndimage.binary_fill_holes(closed > 0).astype(np.uint8) * 255
+    return cv2.morphologyEx(filled, cv2.MORPH_OPEN, k5)
 
 
 # ─── RBC segmentation ──────────────────────────────────────────────────────────
@@ -261,29 +187,62 @@ def build_density_map(frames, rbc_radius, density_path):
 
 
 def _find_hough(enhanced, rbc_radius):
-    bl = cv2.GaussianBlur(enhanced, (5, 5), 1.5)
+    bl = cv2.GaussianBlur(enhanced, (5,5), 1.5)
     c  = cv2.HoughCircles(bl, cv2.HOUGH_GRADIENT, dp=1,
                           minDist=int(rbc_radius*1.4), param1=50, param2=13,
                           minRadius=int(rbc_radius*0.6), maxRadius=int(rbc_radius*1.2))
     return np.round(c[0]).astype(int) if c is not None else None
 
 
-def segment_rbcs(gray, enhanced, corrections, frame_idx, seg_start, seg_end,
+def rbc_component_at(cell_bodies, x, y, h, w, rbc_radius):
+    """
+    Return the cell-body connected component touching point (x,y).
+    Uses this as the actual RBC shape rather than a blunt disc.
+    """
+    xi, yi = int(np.clip(x, 0, w-1)), int(np.clip(y, 0, h-1))
+
+    # If point is not on a cell body, search nearby
+    if cell_bodies[yi, xi] == 0:
+        found = False
+        for r in [4, 8, 14, 20]:
+            for dy in range(-r, r+1, 4):
+                for dx in range(-r, r+1, 4):
+                    ny, nx = yi+dy, xi+dx
+                    if 0 <= ny < h and 0 <= nx < w and cell_bodies[ny, nx] > 0:
+                        xi, yi = nx, ny
+                        found = True
+                        break
+                if found: break
+            if found: break
+        if not found:
+            return None
+
+    # Get connected component at this point
+    # Use flood fill from seed point within cell_bodies
+    mask = np.zeros((h+2, w+2), np.uint8)
+    img  = cell_bodies.copy()
+    cv2.floodFill(img, mask, (xi, yi), 128)
+    comp = (img == 128).astype(np.uint8) * 255
+
+    # Size filter: must be RBC-sized
+    area = comp.sum() // 255
+    rbc_min = np.pi * (rbc_radius * 0.40) ** 2
+    rbc_max = np.pi * (rbc_radius * 1.70) ** 2
+    if area < rbc_min or area > rbc_max:
+        return None
+    return comp
+
+
+def segment_rbcs(enhanced, cell_bodies, corrections, frame_idx, seg_start, seg_end,
                  density, hough_circles, rbc_radius, h, w):
     """
-    RBC mask: interpolated RBC correction discs + Hough watershed.
-    Background corrections erase from the mask.
+    RBC mask: watershed separates cells, correction points select which regions.
+    This gives contour-accurate boundaries, not blunt discs.
+    Background corrections erase the region they fall in.
     """
-    k3 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-    k5 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+    k3 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3,3))
 
-    # Cell bodies for watershed
-    _, dark = cv2.threshold(enhanced, 100, 255, cv2.THRESH_BINARY_INV)
-    closed  = cv2.morphologyEx(dark, cv2.MORPH_CLOSE, k3, iterations=2)
-    filled  = ndimage.binary_fill_holes(closed > 0).astype(np.uint8) * 255
-    cell_bodies = cv2.morphologyEx(filled, cv2.MORPH_OPEN, k5)
-
-    # Seeds from stable density + current Hough
+    # Watershed to separate touching cells into labelled regions
     seed_mask = (density >= 0.20).astype(np.uint8) * 255
     if hough_circles is not None:
         for (cx, cy, cr) in hough_circles:
@@ -294,45 +253,255 @@ def segment_rbcs(gray, enhanced, corrections, frame_idx, seg_start, seg_end,
     markers = np.zeros((h, w), np.int32)
     for lbl in range(1, n_s):
         markers[s_labels == lbl] = lbl + 1
-
     sure_bg = cv2.dilate(cell_bodies, k3, iterations=3)
     markers[sure_bg == 0] = 1
-    cv2.watershed(cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR), markers)
+    cv2.watershed(np.stack([enhanced]*3, axis=-1), markers)
 
     rbc_min = np.pi * (rbc_radius * 0.50) ** 2
-    rbc_max = np.pi * (rbc_radius * 1.60) ** 2
-    rbc_mask = np.zeros((h, w), np.uint8)
-    for lbl in range(2, int(markers.max()) + 1):
-        region = (markers == lbl).astype(np.uint8)
-        if rbc_min <= region.sum() <= rbc_max:
-            rbc_mask |= region * 255
+    rbc_max = np.pi * (rbc_radius * 1.80) ** 2
 
-    # Paint RBC correction discs (interpolated) onto mask
+    # Build set of watershed labels that are RBC-sized
+    rbc_labels = set()
+    for lbl in range(2, int(markers.max()) + 1):
+        area = int((markers == lbl).sum())
+        if rbc_min <= area <= rbc_max:
+            rbc_labels.add(lbl)
+
+    # Start with all Hough/density-seeded RBC regions
+    rbc_mask = np.zeros((h, w), np.uint8)
+    for lbl in rbc_labels:
+        rbc_mask |= (markers == lbl).astype(np.uint8) * 255
+
+    # For each RBC correction point, ensure its watershed region is included
     rbc_pts = interpolate_points(corrections, frame_idx, 'rbc', seg_start, seg_end)
     for x, y in rbc_pts:
-        xi, yi = int(np.clip(x, 0, w-1)), int(np.clip(y, 0, h-1))
-        cv2.circle(rbc_mask, (xi, yi), RBC_DISC_R, 255, -1)
+        xi = int(np.clip(x, 0, w-1))
+        yi = int(np.clip(y, 0, h-1))
 
-    # Erase background corrections
+        # Search for an RBC-sized watershed region near this point
+        found_lbl = None
+        for r in [0, 3, 6, 10, 15]:
+            step = max(1, r)
+            for dy in range(-r, r+1, step):
+                for dx in range(-r, r+1, step):
+                    ny, nx = yi+dy, xi+dx
+                    if 0 <= ny < h and 0 <= nx < w:
+                        lbl = int(markers[ny, nx])
+                        if lbl in rbc_labels:
+                            found_lbl = lbl
+                            break
+                        elif lbl >= 2:
+                            # Check if this region is in size range
+                            area = int((markers == lbl).sum())
+                            if rbc_min <= area <= rbc_max:
+                                rbc_labels.add(lbl)
+                                found_lbl = lbl
+                                break
+                if found_lbl: break
+            if found_lbl: break
+
+        if found_lbl:
+            rbc_mask |= (markers == found_lbl).astype(np.uint8) * 255
+        else:
+            # Accept any watershed region at/near the correction point, even small ones
+            # (the annotator clicked on a real cell, so trust them over size filter)
+            for r2 in [0, 3, 6, 10, 15, 20]:
+                step2 = max(1, r2)
+                inner = False
+                for dy2 in range(-r2, r2+1, step2):
+                    for dx2 in range(-r2, r2+1, step2):
+                        ny2, nx2 = yi+dy2, xi+dx2
+                        if 0<=ny2<h and 0<=nx2<w:
+                            lbl2 = int(markers[ny2, nx2])
+                            if lbl2 >= 2:
+                                region2 = (markers == lbl2).astype(np.uint8)
+                                if region2.sum() >= 40:
+                                    rbc_mask |= region2 * 255
+                                    inner = True; break
+                    if inner: break
+                if inner: break
+            else:
+                # Try a Hough circle centred near this point
+                best_c = None
+                if hough_circles is not None:
+                    for (hcx, hcy, hcr) in hough_circles:
+                        if abs(hcx-xi)<=rbc_radius*1.5 and abs(hcy-yi)<=rbc_radius*1.5:
+                            best_c = (hcx, hcy, hcr)
+                            break
+                if best_c:
+                    cv2.circle(rbc_mask, (best_c[0], best_c[1]), best_c[2], 255, -1)
+                else:
+                    cv2.circle(rbc_mask, (xi, yi), int(rbc_radius * 0.85), 255, -1)
+
+    # Erase background corrections — remove the watershed region at that point
     bg_pts = interpolate_points(corrections, frame_idx, 'background', seg_start, seg_end)
     for x, y in bg_pts:
-        xi, yi = int(np.clip(x, 0, w-1)), int(np.clip(y, 0, h-1))
-        cv2.circle(rbc_mask, (xi, yi), RBC_DISC_R, 0, -1)
+        xi, yi = int(np.clip(x,0,w-1)), int(np.clip(y,0,h-1))
+        lbl = int(markers[yi, xi])
+        if lbl >= 2:
+            rbc_mask[markers == lbl] = 0
+        else:
+            cv2.circle(rbc_mask, (xi, yi), 20, 0, -1)
+
+    # Final guaranteed pass: any RBC correction point not yet covered by the
+    # mask gets a disc. The annotator clicked on a real cell — trust them.
+    for x, y in rbc_pts:
+        xi = int(np.clip(x, 0, w-1))
+        yi = int(np.clip(y, 0, h-1))
+        if rbc_mask[yi, xi] == 0:
+            # Try to find a Hough circle near this point for a better fit
+            best = None
+            if hough_circles is not None:
+                dists = [((hcx-xi)**2+(hcy-yi)**2, hcx, hcy, hcr)
+                         for hcx,hcy,hcr in hough_circles]
+                dists.sort()
+                if dists and dists[0][0] <= (rbc_radius*2)**2:
+                    _, hx, hy, hr = dists[0]
+                    best = (hx, hy, hr)
+            if best:
+                cv2.circle(rbc_mask, (best[0], best[1]), best[2], 255, -1)
+            else:
+                cv2.circle(rbc_mask, (xi, yi), int(rbc_radius * 0.85), 255, -1)
 
     return rbc_mask
 
 
-# ─── Motion buffer (Tier-3 fallback) ───────────────────────────────────────────
+# ─── Neutrophil segmentation ───────────────────────────────────────────────────
 
-class MotionBuffer:
-    def __init__(self, lag=MOTION_LAG):
-        self.lag = lag
-        self.buf = deque(maxlen=lag+1)
-    def update(self, gray): self.buf.append(gray.copy())
-    def reset(self):        self.buf.clear()
-    def diff(self):
-        if len(self.buf) < self.lag+1: return None
-        return cv2.absdiff(self.buf[-1], self.buf[0])
+def grabcut_neutrophil(frame_bgr, enhanced, neutro_pts, bg_pts, rbc_pts,
+                       seed_r=8, n_iter=GRABCUT_ITER):
+    h, w = enhanced.shape
+    if not neutro_pts:
+        return np.zeros((h, w), np.uint8)
+
+    gc = np.full((h, w), cv2.GC_PR_BGD, np.uint8)
+    gc[enhanced > 190] = cv2.GC_BGD
+
+    for x, y in neutro_pts:
+        cv2.circle(gc, (int(np.clip(x,0,w-1)), int(np.clip(y,0,h-1))), seed_r, cv2.GC_FGD, -1)
+    for x, y in bg_pts:
+        cv2.circle(gc, (int(np.clip(x,0,w-1)), int(np.clip(y,0,h-1))), seed_r, cv2.GC_BGD, -1)
+    for x, y in rbc_pts:
+        cv2.circle(gc, (int(np.clip(x,0,w-1)), int(np.clip(y,0,h-1))), seed_r, cv2.GC_PR_BGD, -1)
+
+    bgd = np.zeros((1,65), np.float64)
+    fgd = np.zeros((1,65), np.float64)
+    try:
+        cv2.grabCut(frame_bgr, gc, None, bgd, fgd, n_iter, cv2.GC_INIT_WITH_MASK)
+    except Exception:
+        return np.zeros((h, w), np.uint8)
+
+    raw = np.where((gc==cv2.GC_FGD)|(gc==cv2.GC_PR_FGD), 255, 0).astype(np.uint8)
+
+    # Keep only the single largest component
+    n_c, lbl, stats, _ = cv2.connectedComponentsWithStats(raw)
+    if n_c <= 1:
+        return np.zeros((h, w), np.uint8)
+    best = int(np.argmax(stats[1:, cv2.CC_STAT_AREA])) + 1
+    if stats[best, cv2.CC_STAT_AREA] < MIN_NEUTROPHIL_PX:
+        return np.zeros((h, w), np.uint8)
+    mask = ((lbl == best) * 255).astype(np.uint8)
+    return ndimage.binary_fill_holes(mask).astype(np.uint8) * 255
+
+
+def segment_neutrophil(frame_bgr, enhanced, corrections, frame_idx,
+                       seg_start, seg_end, density, h, w):
+    neutro_pts = interpolate_points(corrections, frame_idx, 'neutrophil', seg_start, seg_end)
+    bg_pts     = interpolate_points(corrections, frame_idx, 'background', seg_start, seg_end)
+    rbc_pts    = interpolate_points(corrections, frame_idx, 'rbc',        seg_start, seg_end)
+
+    direct = any(c['frame']==frame_idx and c['label']=='neutrophil' for c in corrections)
+    tier   = 1 if direct else (2 if neutro_pts else 3)
+
+    if not neutro_pts:
+        return np.zeros((h, w), np.uint8), 3
+
+    # Add density RBC positions as background seeds
+    ry, rx = np.where(density >= 0.20)
+    if len(ry) > 30:
+        idx = np.random.choice(len(ry), 30, replace=False)
+        rbc_pts = rbc_pts + list(zip(rx[idx].tolist(), ry[idx].tolist()))
+
+    mask = grabcut_neutrophil(frame_bgr, enhanced, neutro_pts, bg_pts, rbc_pts)
+
+    # Sanity: mask must cover at least one seed point
+    covered = any(
+        mask[int(np.clip(y,0,h-1)), int(np.clip(x,0,w-1))] > 0
+        for x, y in neutro_pts
+    )
+    if not covered:
+        # Fall back to painted seed discs
+        fallback = np.zeros((h, w), np.uint8)
+        for x, y in neutro_pts:
+            cv2.circle(fallback, (int(np.clip(x,0,w-1)), int(np.clip(y,0,h-1))), 12, 255, -1)
+        mask = ndimage.binary_fill_holes(fallback > 0).astype(np.uint8) * 255
+
+    return mask, tier
+
+
+# ─── Temporal smoothing ────────────────────────────────────────────────────────
+
+def smooth_masks_temporally(masks, jump_frames, n_frames, ratio_thresh=FLICKER_RATIO):
+    """
+    Post-process all masks to suppress single-frame spikes.
+    A frame whose mask area differs by >ratio_thresh from the rolling median
+    of its neighbours (within segment) is replaced by the median mask.
+
+    masks: list of (neutro_mask, rbc_mask) numpy arrays
+    Returns: list of (neutro_mask, rbc_mask)
+    """
+    W = TEMPORAL_WINDOW
+
+    def area(m):
+        return int(m.sum()) // 255
+
+    def segment_of(fi):
+        return segment_for_frame(fi, jump_frames, n_frames)
+
+    smoothed = list(masks)
+
+    for fi in range(n_frames):
+        seg_s, seg_e = segment_of(fi)
+        if fi in jump_frames:
+            continue
+
+        for mask_idx in range(2):  # 0=neutro, 1=rbc
+            cur_area = area(masks[fi][mask_idx])
+            if cur_area == 0:
+                continue
+
+            # Collect neighbour areas in same segment
+            neighbour_areas = []
+            neighbour_masks = []
+            for delta in range(-W, W+1):
+                nfi = fi + delta
+                if delta == 0: continue
+                if nfi < 0 or nfi >= n_frames: continue
+                ns, ne = segment_of(nfi)
+                if ns != seg_s: continue
+                if nfi in jump_frames: continue
+                na = area(masks[nfi][mask_idx])
+                if na > 0:
+                    neighbour_areas.append(na)
+                    neighbour_masks.append(masks[nfi][mask_idx])
+
+            if len(neighbour_areas) < 3:
+                continue
+
+            median_area = float(np.median(neighbour_areas))
+            if median_area < 10:
+                continue
+
+            ratio = cur_area / median_area
+            if ratio > ratio_thresh or ratio < 1.0 / ratio_thresh:
+                # Replace with median of neighbour masks (pixel-wise median)
+                stack = np.stack(neighbour_masks, axis=0).astype(np.float32)
+                median_mask = (np.median(stack, axis=0) > 127).astype(np.uint8) * 255
+                cur = list(smoothed[fi])
+                cur[mask_idx] = median_mask
+                smoothed[fi] = tuple(cur)
+
+    return smoothed
 
 
 # ─── Overlay rendering ─────────────────────────────────────────────────────────
@@ -341,17 +510,15 @@ def draw_overlay(frame_rgb, rbc_mask, neutro_mask):
     out = frame_rgb.copy().astype(np.float32)
     def fill(img, mask, c):
         for ch, v in enumerate(c):
-            img[:,:,ch] = np.where(mask > 0,
-                                   img[:,:,ch]*(1-ALPHA_FILL) + v*ALPHA_FILL,
-                                   img[:,:,ch])
+            img[:,:,ch] = np.where(mask>0, img[:,:,ch]*(1-ALPHA_FILL)+v*ALPHA_FILL, img[:,:,ch])
     fill(out, rbc_mask,    COLOUR_RBC_RGB)
     fill(out, neutro_mask, COLOUR_NEUTROPHIL_RGB)
     out = np.clip(out, 0, 255).astype(np.uint8)
-    def draw_contours(img, mask, c, t):
-        cnts, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    def draw_cnts(img, mask, c, t):
+        cnts,_ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         cv2.drawContours(img, cnts, -1, c, t)
-    draw_contours(out, rbc_mask,    COLOUR_RBC_RGB,        1)
-    draw_contours(out, neutro_mask, COLOUR_NEUTROPHIL_RGB, 2)
+    draw_cnts(out, rbc_mask,    COLOUR_RBC_RGB,        1)
+    draw_cnts(out, neutro_mask, COLOUR_NEUTROPHIL_RGB, 2)
     return out
 
 
@@ -364,7 +531,9 @@ def draw_legend(frame, tier=None, stage_jump=False):
                     cv2.FONT_HERSHEY_SIMPLEX, 0.32, (255,255,255), 1, cv2.LINE_AA)
     h, w = frame.shape[:2]
     if stage_jump:
-        cv2.putText(frame, "STAGE MOVE", (w//2-42, h-8),
+        cv2.putText(frame, "STAGE MOVING", (w//2-50, h//2),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,200,255), 1, cv2.LINE_AA)
+        cv2.putText(frame, "STAGE MOVING", (w//2-50, h-8),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0,200,255), 1, cv2.LINE_AA)
     if tier:
         col = {1:(0,230,120), 2:(0,180,230), 3:(180,180,100)}.get(tier, (128,128,128))
@@ -376,14 +545,14 @@ def draw_legend(frame, tier=None, stage_jump=False):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input",               default="source-movie/chase-original.mp4")
-    parser.add_argument("--output",              default="output/chase-segmented.mp4")
-    parser.add_argument("--density-map",         default="output/rbc_density.npy")
-    parser.add_argument("--build-density-map",   action="store_true")
-    parser.add_argument("--corrections",         default=None)
-    parser.add_argument("--rbc-radius",          type=float, default=17.0)
-    parser.add_argument("--stage-jump-threshold",type=float, default=STAGE_JUMP_THRESH)
-    parser.add_argument("--test",                type=int,   default=0)
+    parser.add_argument("--input",                default="source-movie/chase-original.mp4")
+    parser.add_argument("--output",               default="output/chase-segmented.mp4")
+    parser.add_argument("--density-map",          default="output/rbc_density.npy")
+    parser.add_argument("--build-density-map",    action="store_true")
+    parser.add_argument("--corrections",          default=None)
+    parser.add_argument("--rbc-radius",           type=float, default=17.0)
+    parser.add_argument("--stage-jump-threshold", type=float, default=STAGE_JUMP_THRESH)
+    parser.add_argument("--test",                 type=int,   default=0)
     args = parser.parse_args()
 
     input_path   = Path(args.input)
@@ -420,43 +589,59 @@ def main():
 
     print("  Detecting stage jumps…")
     jump_frames = find_stage_jumps(frames, args.stage_jump_threshold)
-    print(f"  {len(jump_frames)} stage jump(s): {sorted(jump_frames)}")
+    print(f"  {len(jump_frames)} jump(s): {sorted(jump_frames)}")
 
-    motion_buf = MotionBuffer(lag=MOTION_LAG)
-    out_frames = []
+    # ── Pass 1: compute raw per-frame masks ──────────────────────────────────
+    print("  Pass 1: computing masks…")
+    raw_masks  = []  # list of (neutro_mask, rbc_mask)
+    tiers      = []
+    frame_bgrs = []
 
-    print("  Processing…")
     for i in tqdm(range(n_frames), unit="frame"):
         frame     = frames[i]
         gray, enh = preprocess(frame)
         frame_bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-        is_jump   = i in jump_frames
+        frame_bgrs.append(frame_bgr)
 
-        if is_jump:
-            motion_buf.reset()
-            out = frame.copy()
-            draw_legend(out, stage_jump=True)
-            out_frames.append(out)
+        if i in jump_frames:
+            raw_masks.append((np.zeros((h,w),np.uint8), np.zeros((h,w),np.uint8)))
+            tiers.append(0)
             continue
 
-        motion_buf.update(gray)
         hough = _find_hough(enh, args.rbc_radius)
-
-        # Segment bounds (no cross-jump propagation)
-        seg_start, seg_end = segment_for_frame(i, jump_frames, n_frames)
+        seg_s, seg_e = segment_for_frame(i, jump_frames, n_frames)
+        cell_bodies  = get_cell_bodies(enh)
 
         neutro_mask, tier = segment_neutrophil(
-            frame_bgr, enh, corrections, i, seg_start, seg_end, density, h, w)
+            frame_bgr, enh, corrections, i, seg_s, seg_e, density, h, w)
 
         rbc_mask = segment_rbcs(
-            gray, enh, corrections, i, seg_start, seg_end,
+            enh, cell_bodies, corrections, i, seg_s, seg_e,
             density, hough, args.rbc_radius, h, w)
 
-        # Prevent overlap: neutrophil wins over RBC
+        # Neutrophil wins over RBC
         rbc_mask = cv2.bitwise_and(rbc_mask, cv2.bitwise_not(neutro_mask))
 
-        out = draw_overlay(frame, rbc_mask, neutro_mask)
-        draw_legend(out, tier=tier)
+        raw_masks.append((neutro_mask, rbc_mask))
+        tiers.append(tier)
+
+    # ── Pass 2: temporal smoothing ───────────────────────────────────────────
+    print("  Pass 2: temporal smoothing…")
+    smooth_masks = smooth_masks_temporally(raw_masks, jump_frames, n_frames)
+
+    # ── Pass 3: render output video ──────────────────────────────────────────
+    print("  Pass 3: rendering…")
+    out_frames = []
+    for i in range(n_frames):
+        frame = frames[i]
+        is_jump = i in jump_frames
+        if is_jump:
+            out = frame.copy()
+            draw_legend(out, stage_jump=True)
+        else:
+            neutro_mask, rbc_mask = smooth_masks[i]
+            out = draw_overlay(frame, rbc_mask, neutro_mask)
+            draw_legend(out, tier=tiers[i])
         out_frames.append(out)
 
     print(f"\nWriting: {output_path}")

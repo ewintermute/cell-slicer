@@ -368,7 +368,8 @@
   const VID_H  = 240;
   const ERASE_RADIUS = 14; // px in video coords
 
-  // Stage jump frames — corrections don't trail across these
+  // Stage jump frames (detected by pipeline: mean frame diff > 18px)
+  // Corrections don't trail across these; these frames show "STAGE MOVING"
   const STAGE_JUMPS = new Set([8,9,43,44,70,85,118,132,166,255,256,356,357,403]);
 
   const COLOURS = {
