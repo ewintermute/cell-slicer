@@ -6,343 +6,403 @@
 <title>Cell Slicer — Pixel Art Editor</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#111;color:#eee;font-family:monospace;display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px}
-h1{font-size:14px;color:#aaa;letter-spacing:.1em}
-#main{position:relative;display:inline-block}
-#bg-canvas{display:block;image-rendering:pixelated}
-#art-canvas{position:absolute;top:0;left:0;cursor:crosshair}
-#controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center}
-button{background:#222;color:#ddd;border:1px solid #444;border-radius:4px;padding:4px 10px;cursor:pointer;font-family:monospace;font-size:12px}
-button:hover{background:#333}
-button.active{background:#444;border-color:#888}
-.swatch{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border:2px solid transparent;border-radius:4px;cursor:pointer;font-size:12px}
-.swatch.active{border-color:#fff}
-.dot{width:12px;height:12px;border-radius:2px}
-#frame-info{font-size:12px;color:#aaa}
-input[type=range]{width:220px;cursor:pointer}
-#status{font-size:11px;color:#888;min-height:14px}
-#export-btn{background:#2a4a2a;border-color:#4a8a4a}
-#export-btn:hover{background:#3a5a3a}
+body{background:#111;color:#ddd;font-family:monospace;display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px;user-select:none}
+h1{font-size:13px;color:#888;letter-spacing:.08em}
+
+/* ── toolbar rows ── */
+.row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center}
+button{background:#222;color:#ccc;border:1px solid #3a3a3a;border-radius:3px;padding:3px 9px;cursor:pointer;font-family:monospace;font-size:12px;white-space:nowrap}
+button:hover{background:#2e2e2e}
+button.active{background:#3a3a3a;border-color:#777;color:#fff}
+
+/* ── paint swatches ── */
+.swatch{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border:2px solid #333;border-radius:3px;cursor:pointer;font-size:12px}
+.swatch:hover{border-color:#666}
+.swatch.active{border-color:#ccc}
+.dot{width:11px;height:11px;border-radius:2px;flex-shrink:0}
+
+/* ── canvas area ── */
+#wrap{position:relative;line-height:0;cursor:crosshair}
+#bg-canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+#art-canvas{position:absolute;top:0;left:0;pointer-events:none}
+#hover-canvas{position:absolute;top:0;left:0;pointer-events:none}
+
+/* ── misc ── */
+label.lbl{font-size:11px;color:#777}
+#status{font-size:11px;color:#666;min-height:13px;text-align:center}
+#export-btn{background:#1e3a1e;border-color:#3a6a3a}
+#export-btn:hover{background:#274527}
+#frame-info{font-size:12px;color:#999;min-width:90px;text-align:center}
+input[type=range]{cursor:pointer}
 </style>
 </head>
 <body>
 <h1>CELL SLICER — PIXEL ART EDITOR</h1>
 
-<div id="controls">
+<!-- row 1: playback -->
+<div class="row">
   <button id="play-btn">▶ Play</button>
-  <input type="range" id="scrub" min="0" value="0">
+  <input type="range" id="scrub" min="0" value="0" style="width:280px">
   <span id="frame-info">frame 0 / 0</span>
-</div>
-
-<div id="controls">
-  <label style="font-size:12px;color:#888">Speed:</label>
   <button id="slow-btn">½×</button>
   <button id="norm-btn" class="active">1×</button>
   <button id="fast-btn">2×</button>
-
-  <label style="font-size:12px;color:#888;margin-left:8px">Overlay:</label>
-  <input type="range" id="alpha-slider" min="0" max="100" value="75" style="width:80px">
-
-  <label style="font-size:12px;color:#888;margin-left:8px">Zoom:</label>
-  <button id="z1-btn">1×</button>
-  <button id="z2-btn" class="active">2×</button>
-  <button id="z3-btn">3×</button>
 </div>
 
-<div id="main">
-  <canvas id="bg-canvas"></canvas>
-  <canvas id="art-canvas"></canvas>
+<!-- row 2: display -->
+<div class="row">
+  <label class="lbl">Overlay α:</label>
+  <input type="range" id="alpha-sl" min="0" max="100" value="80" style="width:80px">
+  <label class="lbl" style="margin-left:6px">Zoom:</label>
+  <button id="z6-btn">6×</button>
+  <button id="z8-btn">8×</button>
+  <button id="z10-btn" class="active">10×</button>
+  <button id="z12-btn">12×</button>
 </div>
 
-<div id="controls">
-  <span style="font-size:12px;color:#888">Paint:</span>
-  <span class="swatch active" data-label="0"><span class="dot" style="background:#000;border:1px solid #555"></span>Erase</span>
+<!-- row 3: paint tools -->
+<div class="row">
+  <label class="lbl">Paint:</label>
+  <span class="swatch active" data-label="0"><span class="dot" style="background:#111;border:1px solid #555"></span>Erase</span>
   <span class="swatch" data-label="1"><span class="dot" style="background:#cc2222"></span>RBC fill</span>
   <span class="swatch" data-label="2"><span class="dot" style="background:#882299"></span>RBC edge</span>
   <span class="swatch" data-label="3"><span class="dot" style="background:#22cc44"></span>Neutrophil</span>
+  <span class="swatch" data-label="stamp" id="stamp-swatch"><span class="dot" style="background:radial-gradient(circle,#cc2222 40%,#882299 100%)"></span>Stamp RBC</span>
   <button id="undo-btn">↩ Undo</button>
-  <button id="export-btn" id="export-btn">⬇ Export JSON</button>
+  <button id="export-btn">⬇ Export</button>
 </div>
-<div id="status"></div>
+
+<!-- canvas -->
+<div id="wrap">
+  <canvas id="bg-canvas"></canvas>
+  <canvas id="art-canvas"></canvas>
+  <canvas id="hover-canvas"></canvas>
+</div>
+
+<div id="status">Loading…</div>
+<div class="row" style="font-size:10px;color:#555">
+  ← → navigate &nbsp;|&nbsp; 0–3 paint &nbsp;|&nbsp; S stamp RBC &nbsp;|&nbsp; Ctrl+Z undo &nbsp;|&nbsp; click+drag to paint
+</div>
 
 <script>
-// ── Colour table (label → RGBA) ────────────────────────────────────────────
-const PALETTE = {
-  0: null,                      // background — transparent
-  1: [204,  34,  34, 200],      // RBC interior — red
-  2: [136,  34, 153, 230],      // RBC edge     — purple
-  3: [ 34, 204,  68, 210],      // neutrophil   — green
+// ── Palette (label → [r,g,b,a]) ───────────────────────────────────────────
+const PAL = {
+  0: null,
+  1: [204,  34,  34, 210],
+  2: [136,  34, 153, 240],
+  3: [ 34, 204,  68, 220],
 };
 
-// ── State ──────────────────────────────────────────────────────────────────
-let data        = null;   // loaded pixel_art.json
-let origFrames  = null;   // original video frames (ImageData)
-let editedFrames = null;  // Int8Array per frame (overrides: -1 = unedited, 0-3 = label)
-let frameIdx    = 0;
-let playing     = false;
-let playTimer   = null;
-let fps         = 15;
-let speedMult   = 1;
-let zoom        = 2;
-let alpha       = 0.75;
-let paintLabel  = 0;
-let painting    = false;
-let undoStack   = [];     // [{frame, pixel, old, new}]
+// ── State ─────────────────────────────────────────────────────────────────
+let data = null;
+let origFrames = null;   // ImageData per art-frame
+let edited = null;       // Int8Array per art-frame (-1 = unedited)
+let fi = 0;
+let playing = false, timer = null, speed = 1;
+let zoom = 10;
+let alpha = 0.80;
+let paintLabel = 0;   // 0-3 or 'stamp'
+let painting = false;
+let undo = [];
 
-const bgCvs  = document.getElementById('bg-canvas');
-const artCvs = document.getElementById('art-canvas');
-const bgCtx  = bgCvs.getContext('2d');
-const artCtx = artCvs.getContext('2d');
+const bgC  = document.getElementById('bg-canvas');
+const artC = document.getElementById('art-canvas');
+const hovC = document.getElementById('hover-canvas');
+const bgX  = bgC.getContext('2d');
+const artX = artC.getContext('2d');
+const hovX = hovC.getContext('2d');
 const scrub  = document.getElementById('scrub');
 const finfo  = document.getElementById('frame-info');
 const status = document.getElementById('status');
 const playBtn= document.getElementById('play-btn');
 
-// ── Load pixel_art.json ────────────────────────────────────────────────────
+// ── Init ──────────────────────────────────────────────────────────────────
 async function init() {
   status.textContent = 'Loading pixel_art.json…';
   try {
-    const r = await fetch('pixel_art.json');
-    data = await r.json();
-  } catch(e) {
-    status.textContent = 'Error loading pixel_art.json: ' + e;
-    return;
-  }
+    data = await fetch('pixel_art.json').then(r => r.json());
+  } catch(e) { status.textContent = 'Error: ' + e; return; }
 
-  fps = data.fps || 15;
   scrub.max = data.n_frames - 1;
-  editedFrames = data.frames.map(f => new Int8Array(f.length).fill(-1));
+  edited = Array.from({length: data.n_frames}, () =>
+    new Int8Array(data.width * data.height).fill(-1));
 
   setZoom(zoom);
-  await loadOriginalFrames();
+  status.textContent = 'Decoding video…';
+  await decodeFrames();
   showFrame(0);
-  status.textContent = 'Ready. Click/drag to paint. Export saves your edits.';
+  status.textContent = 'Ready. Keys: ← → navigate | 0-3 paint | S stamp | Ctrl+Z undo';
 }
 
-// ── Load original video frames as ImageData ─────────────────────────────────
-async function loadOriginalFrames() {
-  status.textContent = 'Decoding original frames…';
-  const video = document.createElement('video');
-  video.src = 'chase-original.mp4';
-  video.muted = true;
-  video.preload = 'auto';
+// ── Decode original frames via video seek ─────────────────────────────────
+async function decodeFrames() {
+  const vid = document.createElement('video');
+  vid.src = 'chase-original.mp4';
+  vid.muted = true;
+  vid.preload = 'auto';
+  await new Promise(r => { vid.oncanplay = r; vid.load(); });
 
-  // Seek-decode approach using an offscreen canvas
-  const ofc  = document.createElement('canvas');
-  ofc.width  = data.block_size * data.width;
-  ofc.height = data.block_size * data.height;
-  const ofc_ctx = ofc.getContext('2d');
+  const W = data.width * data.block_size;
+  const H = data.height * data.block_size;
+  const ofc = Object.assign(document.createElement('canvas'), {width: W, height: H});
+  const ox  = ofc.getContext('2d');
+  const fps = data.fps || 15;
+  const dur = vid.duration;
+  const src = data.src_indices;
 
   origFrames = new Array(data.n_frames);
-
-  await new Promise(res => { video.oncanplay = res; video.load(); });
-
-  const dur = video.duration;
-  for (let i = 0; i < data.n_frames; i++) {
-    const t = i / fps;
-    if (t >= dur) { origFrames[i] = origFrames[i-1]; continue; }
-    await new Promise(res => {
-      video.onseeked = res;
-      video.currentTime = t;
-    });
-    // Draw the crop region only
-    const sx = data.crop_x;
-    const sy = data.crop_y || 0;
-    const sw = data.block_size * data.width;
-    const sh = data.block_size * data.height;
-    ofc_ctx.drawImage(video, sx, sy, sw, sh, 0, 0, sw, sh);
-    origFrames[i] = ofc_ctx.getImageData(0, 0, sw, sh);
-    if (i % 20 === 0) status.textContent = `Decoding frames… ${i}/${data.n_frames}`;
+  for (let ai = 0; ai < data.n_frames; ai++) {
+    const t = src[ai] / fps;
+    if (t > dur) { origFrames[ai] = origFrames[ai-1]; continue; }
+    await new Promise(r => { vid.onseeked = r; vid.currentTime = t; });
+    ox.drawImage(vid, 0, 0, 320, 240, 0, 0, W, H);
+    origFrames[ai] = ox.getImageData(0, 0, W, H);
+    if (ai % 30 === 0) status.textContent = `Decoding… ${ai}/${data.n_frames}`;
   }
-  status.textContent = 'Frames loaded.';
+  status.textContent = 'Frames decoded.';
 }
 
-// ── Geometry helpers ────────────────────────────────────────────────────────
+// ── Layout ────────────────────────────────────────────────────────────────
 function setZoom(z) {
   zoom = z;
-  const pw = data.width  * zoom;
-  const ph = data.height * zoom;
-  bgCvs.width  = artCvs.width  = pw;
-  bgCvs.height = artCvs.height = ph;
-  bgCtx.imageSmoothingEnabled  = false;
-  artCtx.imageSmoothingEnabled = false;
-  document.querySelectorAll('#controls button[id^=z]').forEach(b => b.classList.remove('active'));
-  document.getElementById('z'+z+'-btn').classList.add('active');
+  const pw = data.width  * z, ph = data.height * z;
+  [bgC, artC, hovC].forEach(c => {
+    c.width = pw; c.height = ph;
+    c.getContext('2d').imageSmoothingEnabled = false;
+  });
+  document.querySelectorAll('[id^=z]').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('z'+z+'-btn');
+  if (btn) btn.classList.add('active');
 }
 
-function canvasToPx(clientX, clientY) {
-  const r   = artCvs.getBoundingClientRect();
-  const ax  = Math.floor((clientX - r.left)  / zoom);
-  const ay  = Math.floor((clientY - r.top)   / zoom);
-  return {ax, ay};
-}
-
-function pixelIndex(ax, ay) {
-  if (ax < 0 || ax >= data.width || ay < 0 || ay >= data.height) return -1;
-  return ay * data.width + ax;
-}
-
-// ── Render ─────────────────────────────────────────────────────────────────
-function showFrame(fi) {
-  frameIdx = fi;
+// ── Render ────────────────────────────────────────────────────────────────
+function showFrame(idx) {
+  fi = Math.max(0, Math.min(data.n_frames - 1, idx));
   scrub.value = fi;
-  finfo.textContent = `frame ${fi} / ${data.n_frames - 1}`;
+  finfo.textContent = `frame ${fi} / ${data.n_frames-1}`;
 
-  // Background — scale up from block-size source
-  if (origFrames && origFrames[fi]) {
-    const tmp = document.createElement('canvas');
-    tmp.width  = data.width  * data.block_size;
-    tmp.height = data.height * data.block_size;
+  // Background
+  if (origFrames?.[fi]) {
+    const tmp = Object.assign(document.createElement('canvas'),
+      {width: data.width*data.block_size, height: data.height*data.block_size});
     tmp.getContext('2d').putImageData(origFrames[fi], 0, 0);
-    bgCtx.drawImage(tmp, 0, 0, bgCvs.width, bgCvs.height);
+    bgX.drawImage(tmp, 0, 0, bgC.width, bgC.height);
   } else {
-    bgCtx.fillStyle = '#000';
-    bgCtx.fillRect(0, 0, bgCvs.width, bgCvs.height);
+    bgX.fillStyle='#000'; bgX.fillRect(0,0,bgC.width,bgC.height);
   }
 
-  renderArt(fi);
+  renderArt();
 }
 
-function getLabel(fi, idx) {
-  const e = editedFrames[fi][idx];
-  return e >= 0 ? e : data.frames[fi][idx];
+function getLabel(idx) {
+  const e = edited[fi][idx]; return e >= 0 ? e : data.frames[fi][idx];
 }
 
-function renderArt(fi) {
+function renderArt() {
   const W = data.width, H = data.height;
-  const img = artCtx.createImageData(W * zoom, H * zoom);
-  const d   = img.data;
-
+  const img = artX.createImageData(W*zoom, H*zoom);
+  const d = img.data;
   for (let ay = 0; ay < H; ay++) {
     for (let ax = 0; ax < W; ax++) {
-      const label = getLabel(fi, ay * W + ax);
-      const col   = PALETTE[label];
+      const col = PAL[getLabel(ay*W+ax)];
       if (!col) continue;
       const [r,g,b,a] = col;
       const fa = Math.round(a * alpha);
-      for (let dy = 0; dy < zoom; dy++) {
-        for (let dx = 0; dx < zoom; dx++) {
-          const px = ((ay * zoom + dy) * W * zoom + (ax * zoom + dx)) * 4;
-          d[px]   = r; d[px+1] = g; d[px+2] = b; d[px+3] = fa;
-        }
+      for (let dy = 0; dy < zoom; dy++) for (let dx = 0; dx < zoom; dx++) {
+        const p = ((ay*zoom+dy)*W*zoom + (ax*zoom+dx))*4;
+        d[p]=r; d[p+1]=g; d[p+2]=b; d[p+3]=fa;
       }
     }
   }
-  artCtx.putImageData(img, 0, 0);
+  artX.putImageData(img, 0, 0);
 }
 
-// ── Playback ───────────────────────────────────────────────────────────────
+// ── Hover preview (stamp) ─────────────────────────────────────────────────
+function clearHover() { hovX.clearRect(0,0,hovC.width,hovC.height); }
+
+function drawHover(ax, ay) {
+  clearHover();
+  if (paintLabel !== 'stamp') return;
+  const r = data.rbc_radius || 3;
+  hovX.save();
+  for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+    if (dx*dx+dy*dy > r*r) continue;
+    const nx = ax+dx, ny = ay+dy;
+    if (nx < 0 || nx >= data.width || ny < 0 || ny >= data.height) continue;
+    const isEdge = (() => {
+      // edge if any neighbour is outside disc
+      for (let ey=-1;ey<=1;ey++) for (let ex=-1;ex<=1;ex++) {
+        if ((dx+ex)**2+(dy+ey)**2 > r*r) return true;
+      }
+      return false;
+    })();
+    hovX.fillStyle = isEdge ? 'rgba(136,34,153,0.75)' : 'rgba(204,34,34,0.60)';
+    hovX.fillRect(nx*zoom, ny*zoom, zoom, zoom);
+  }
+  hovX.restore();
+}
+
+// ── Paint ─────────────────────────────────────────────────────────────────
+function pointerToArt(clientX, clientY) {
+  const r = hovC.getBoundingClientRect();
+  return {
+    ax: Math.floor((clientX - r.left)  / zoom),
+    ay: Math.floor((clientY - r.top)   / zoom)
+  };
+}
+
+function applyPaint(ax, ay) {
+  const W = data.width;
+  if (paintLabel === 'stamp') {
+    const r = data.rbc_radius || 3;
+    const batch = [];
+    for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
+      if (dx*dx+dy*dy > r*r) continue;
+      const nx = ax+dx, ny = ay+dy;
+      if (nx<0||nx>=data.width||ny<0||ny>=data.height) continue;
+      const idx = ny*W+nx;
+      const isEdge = (() => {
+        for (let ey=-1;ey<=1;ey++) for (let ex=-1;ex<=1;ex++) {
+          if ((dx+ex)**2+(dy+ey)**2>r*r) return true;
+        }
+        return false;
+      })();
+      const newLabel = isEdge ? 2 : 1;
+      if (edited[fi][idx] === newLabel) continue;
+      batch.push({idx, old: edited[fi][idx]});
+      edited[fi][idx] = newLabel;
+    }
+    if (batch.length) undo.push({frame:fi, batch});
+  } else {
+    const idx = ay*W+ax;
+    if (ax<0||ax>=data.width||ay<0||ay>=data.height) return;
+    const old = edited[fi][idx];
+    if (old === paintLabel) return;
+    undo.push({frame:fi, batch:[{idx, old}]});
+    edited[fi][idx] = paintLabel;
+  }
+  renderArt();
+}
+
+// Pointer event wiring (both mouse and touch)
+function onDown(e) {
+  e.preventDefault();
+  painting = true;
+  const pt = e.touches ? e.touches[0] : e;
+  const {ax,ay} = pointerToArt(pt.clientX, pt.clientY);
+  applyPaint(ax, ay);
+}
+function onMove(e) {
+  e.preventDefault();
+  const pt = e.touches ? e.touches[0] : e;
+  const {ax,ay} = pointerToArt(pt.clientX, pt.clientY);
+  drawHover(ax, ay);
+  if (painting) applyPaint(ax, ay);
+}
+function onUp() { painting = false; }
+
+// Attach to the hover canvas (topmost)
+hovC.addEventListener('mousedown', onDown);
+hovC.addEventListener('mousemove', onMove);
+window.addEventListener('mouseup',  onUp);
+hovC.addEventListener('touchstart', onDown, {passive:false});
+hovC.addEventListener('touchmove',  onMove, {passive:false});
+window.addEventListener('touchend', onUp);
+hovC.addEventListener('mouseleave', clearHover);
+hovC.style.cursor = 'crosshair';
+hovC.style.pointerEvents = 'auto';
+artC.style.pointerEvents = 'none';
+
+// ── Playback ──────────────────────────────────────────────────────────────
 function play() {
   if (playing) return;
-  playing = true;
-  playBtn.textContent = '⏸ Pause';
-  const interval = 1000 / (fps * speedMult);
-  playTimer = setInterval(() => {
-    showFrame((frameIdx + 1) % data.n_frames);
-  }, interval);
+  playing = true; playBtn.textContent = '⏸ Pause';
+  timer = setInterval(() => showFrame((fi+1) % data.n_frames), 1000/(15*speed));
 }
-
 function pause() {
-  playing = false;
-  playBtn.textContent = '▶ Play';
-  clearInterval(playTimer);
+  playing = false; playBtn.textContent = '▶ Play';
+  clearInterval(timer);
 }
-
 playBtn.addEventListener('click', () => playing ? pause() : play());
 scrub.addEventListener('input', () => { pause(); showFrame(+scrub.value); });
 
-document.getElementById('slow-btn').addEventListener('click', () => { speedMult=0.5; setSpeed(); });
-document.getElementById('norm-btn').addEventListener('click', () => { speedMult=1;   setSpeed(); });
-document.getElementById('fast-btn').addEventListener('click', () => { speedMult=2;   setSpeed(); });
-function setSpeed() {
+function setSpeed(s) {
+  speed = s;
   ['slow','norm','fast'].forEach(k => document.getElementById(k+'-btn').classList.remove('active'));
-  const map={0.5:'slow',1:'norm',2:'fast'};
-  document.getElementById(map[speedMult]+'-btn').classList.add('active');
+  ({0.5:'slow',1:'norm',2:'fast'})[s];
+  document.getElementById({0.5:'slow',1:'norm',2:'fast'}[s]+'-btn').classList.add('active');
   if (playing) { pause(); play(); }
 }
+document.getElementById('slow-btn').addEventListener('click', () => setSpeed(0.5));
+document.getElementById('norm-btn').addEventListener('click', () => setSpeed(1));
+document.getElementById('fast-btn').addEventListener('click', () => setSpeed(2));
 
-document.getElementById('alpha-slider').addEventListener('input', e => {
-  alpha = e.target.value / 100;
-  renderArt(frameIdx);
+document.getElementById('alpha-sl').addEventListener('input', e => {
+  alpha = e.target.value/100; renderArt();
 });
 
-document.getElementById('z1-btn').addEventListener('click', () => { setZoom(1); showFrame(frameIdx); });
-document.getElementById('z2-btn').addEventListener('click', () => { setZoom(2); showFrame(frameIdx); });
-document.getElementById('z3-btn').addEventListener('click', () => { setZoom(3); showFrame(frameIdx); });
+[6,8,10,12].forEach(z =>
+  document.getElementById('z'+z+'-btn').addEventListener('click', () => {
+    setZoom(z); showFrame(fi);
+  }));
 
-// ── Paint tools ────────────────────────────────────────────────────────────
-document.querySelectorAll('.swatch').forEach(s => {
-  s.addEventListener('click', () => {
-    document.querySelectorAll('.swatch').forEach(x => x.classList.remove('active'));
-    s.classList.add('active');
-    paintLabel = +s.dataset.label;
-  });
-});
-
-function paintPixel(clientX, clientY) {
-  const {ax, ay} = canvasToPx(clientX, clientY);
-  const idx = pixelIndex(ax, ay);
-  if (idx < 0) return;
-  const old = editedFrames[frameIdx][idx];
-  if (old === paintLabel) return;
-  undoStack.push({frame: frameIdx, idx, old});
-  editedFrames[frameIdx][idx] = paintLabel;
-  renderArt(frameIdx);
+// ── Tool selection ────────────────────────────────────────────────────────
+function selectTool(lbl) {
+  paintLabel = lbl;
+  document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+  const sw = typeof lbl === 'number'
+    ? document.querySelector(`.swatch[data-label="${lbl}"]`)
+    : document.getElementById('stamp-swatch');
+  if (sw) sw.classList.add('active');
+  if (lbl !== 'stamp') clearHover();
 }
+document.querySelectorAll('.swatch').forEach(s =>
+  s.addEventListener('click', () =>
+    selectTool(s.dataset.label === 'stamp' ? 'stamp' : +s.dataset.label)));
 
-artCvs.addEventListener('mousedown', e => { painting=true; paintPixel(e.clientX, e.clientY); });
-artCvs.addEventListener('mousemove', e => { if (painting) paintPixel(e.clientX, e.clientY); });
-window.addEventListener('mouseup', () => { painting = false; });
-
-artCvs.addEventListener('touchstart', e => {
-  e.preventDefault(); painting=true;
-  paintPixel(e.touches[0].clientX, e.touches[0].clientY);
-}, {passive:false});
-artCvs.addEventListener('touchmove', e => {
-  e.preventDefault();
-  paintPixel(e.touches[0].clientX, e.touches[0].clientY);
-}, {passive:false});
-window.addEventListener('touchend', () => { painting=false; });
-
-// ── Undo ───────────────────────────────────────────────────────────────────
+// ── Undo ──────────────────────────────────────────────────────────────────
 document.getElementById('undo-btn').addEventListener('click', () => {
-  if (!undoStack.length) return;
-  const {frame, idx, old} = undoStack.pop();
-  editedFrames[frame][idx] = old;
-  if (frame === frameIdx) renderArt(frameIdx);
+  if (!undo.length) return;
+  const {frame, batch} = undo.pop();
+  batch.forEach(({idx, old}) => edited[frame][idx] = old);
+  if (frame === fi) renderArt();
 });
+
+// ── Keyboard shortcuts ────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
-  if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
-    e.preventDefault();
-    document.getElementById('undo-btn').click();
+  if (e.target.tagName === 'INPUT') return;
+  if ((e.ctrlKey||e.metaKey) && e.key==='z') {
+    e.preventDefault(); document.getElementById('undo-btn').click(); return;
   }
-  // Arrow keys for frame navigation
-  if (e.key === 'ArrowRight') { pause(); showFrame(Math.min(frameIdx+1, data.n_frames-1)); }
-  if (e.key === 'ArrowLeft')  { pause(); showFrame(Math.max(frameIdx-1, 0)); }
-  // Number keys to select paint label
-  if (['0','1','2','3'].includes(e.key)) {
-    document.querySelector(`.swatch[data-label="${e.key}"]`).click();
-  }
+  const map = {
+    'ArrowRight': () => { pause(); showFrame(fi+1); },
+    'ArrowLeft':  () => { pause(); showFrame(fi-1); },
+    '0': () => selectTool(0),
+    '1': () => selectTool(1),
+    '2': () => selectTool(2),
+    '3': () => selectTool(3),
+    's': () => selectTool('stamp'),
+    'S': () => selectTool('stamp'),
+    ' ': () => { e.preventDefault(); playing ? pause() : play(); },
+  };
+  if (map[e.key]) map[e.key]();
 });
 
-// ── Export ─────────────────────────────────────────────────────────────────
+// ── Export ────────────────────────────────────────────────────────────────
 document.getElementById('export-btn').addEventListener('click', () => {
-  // Merge edits back into frames
-  const merged = data.frames.map((f, fi) => {
-    const e = editedFrames[fi];
-    return f.map((v, i) => e[i] >= 0 ? e[i] : v);
+  const merged = data.frames.map((f, i) => {
+    const e = edited[i];
+    return f.map((v, j) => e[j] >= 0 ? e[j] : v);
   });
-  const out = Object.assign({}, data, {frames: merged, edited: true});
-  const blob = new Blob([JSON.stringify(out, null, 0)], {type:'application/json'});
-  const a    = document.createElement('a');
-  a.href     = URL.createObjectURL(blob);
-  a.download = 'pixel_art_edited.json';
+  const out = {...data, frames: merged, edited: true,
+               exported_at: new Date().toISOString()};
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([JSON.stringify(out)],{type:'application/json'})),
+    download: 'pixel_art_edited.json'
+  });
   a.click();
-  status.textContent = 'Exported pixel_art_edited.json';
+  status.textContent = 'Exported pixel_art_edited.json ✓';
 });
-
-// ── Keyboard shortcut hint ─────────────────────────────────────────────────
-status.title = '← → navigate frames  |  0-3 select paint  |  Ctrl+Z undo';
 
 init();
 </script>
