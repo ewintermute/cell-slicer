@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cell Slicer — Pixel Art Editor</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#111;color:#eee;font-family:monospace;display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px}
+h1{font-size:14px;color:#aaa;letter-spacing:.1em}
+#main{position:relative;display:inline-block}
+#bg-canvas{display:block;image-rendering:pixelated}
+#art-canvas{position:absolute;top:0;left:0;cursor:crosshair}
+#controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center}
+button{background:#222;color:#ddd;border:1px solid #444;border-radius:4px;padding:4px 10px;cursor:pointer;font-family:monospace;font-size:12px}
+button:hover{background:#333}
+button.active{background:#444;border-color:#888}
+.swatch{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border:2px solid transparent;border-radius:4px;cursor:pointer;font-size:12px}
+.swatch.active{border-color:#fff}
+.dot{width:12px;height:12px;border-radius:2px}
+#frame-info{font-size:12px;color:#aaa}
+input[type=range]{width:220px;cursor:pointer}
+#status{font-size:11px;color:#888;min-height:14px}
+#export-btn{background:#2a4a2a;border-color:#4a8a4a}
+#export-btn:hover{background:#3a5a3a}
+</style>
+</head>
+<body>
+<h1>CELL SLICER — PIXEL ART EDITOR</h1>
+
+<div id="controls">
+  <button id="play-btn">▶ Play</button>
+  <input type="range" id="scrub" min="0" value="0">
+  <span id="frame-info">frame 0 / 0</span>
+</div>
+
+<div id="controls">
+  <label style="font-size:12px;color:#888">Speed:</label>
+  <button id="slow-btn">½×</button>
+  <button id="norm-btn" class="active">1×</button>
+  <button id="fast-btn">2×</button>
+
+  <label style="font-size:12px;color:#888;margin-left:8px">Overlay:</label>
+  <input type="range" id="alpha-slider" min="0" max="100" value="75" style="width:80px">
+
+  <label style="font-size:12px;color:#888;margin-left:8px">Zoom:</label>
+  <button id="z1-btn">1×</button>
+  <button id="z2-btn" class="active">2×</button>
+  <button id="z3-btn">3×</button>
+</div>
+
+<div id="main">
+  <canvas id="bg-canvas"></canvas>
+  <canvas id="art-canvas"></canvas>
+</div>
+
+<div id="controls">
+  <span style="font-size:12px;color:#888">Paint:</span>
+  <span class="swatch active" data-label="0"><span class="dot" style="background:#000;border:1px solid #555"></span>Erase</span>
+  <span class="swatch" data-label="1"><span class="dot" style="background:#cc2222"></span>RBC fill</span>
+  <span class="swatch" data-label="2"><span class="dot" style="background:#882299"></span>RBC edge</span>
+  <span class="swatch" data-label="3"><span class="dot" style="background:#22cc44"></span>Neutrophil</span>
+  <button id="undo-btn">↩ Undo</button>
+  <button id="export-btn" id="export-btn">⬇ Export JSON</button>
+</div>
+<div id="status"></div>
+
+<script>
+// ── Colour table (label → RGBA) ────────────────────────────────────────────
+const PALETTE = {
+  0: null,                      // background — transparent
+  1: [204,  34,  34, 200],      // RBC interior — red
+  2: [136,  34, 153, 230],      // RBC edge     — purple
+  3: [ 34, 204,  68, 210],      // neutrophil   — green
+};
+
+// ── State ──────────────────────────────────────────────────────────────────
+let data        = null;   // loaded pixel_art.json
+let origFrames  = null;   // original video frames (ImageData)
+let editedFrames = null;  // Int8Array per frame (overrides: -1 = unedited, 0-3 = label)
+let frameIdx    = 0;
+let playing     = false;
+let playTimer   = null;
+let fps         = 15;
+let speedMult   = 1;
+let zoom        = 2;
+let alpha       = 0.75;
+let paintLabel  = 0;
+let painting    = false;
+let undoStack   = [];     // [{frame, pixel, old, new}]
+
+const bgCvs  = document.getElementById('bg-canvas');
+const artCvs = document.getElementById('art-canvas');
+const bgCtx  = bgCvs.getContext('2d');
+const artCtx = artCvs.getContext('2d');
+const scrub  = document.getElementById('scrub');
+const finfo  = document.getElementById('frame-info');
+const status = document.getElementById('status');
+const playBtn= document.getElementById('play-btn');
+
+// ── Load pixel_art.json ────────────────────────────────────────────────────
+async function init() {
+  status.textContent = 'Loading pixel_art.json…';
+  try {
+    const r = await fetch('pixel_art.json');
+    data = await r.json();
+  } catch(e) {
+    status.textContent = 'Error loading pixel_art.json: ' + e;
+    return;
+  }
+
+  fps = data.fps || 15;
+  scrub.max = data.n_frames - 1;
+  editedFrames = data.frames.map(f => new Int8Array(f.length).fill(-1));
+
+  setZoom(zoom);
+  await loadOriginalFrames();
+  showFrame(0);
+  status.textContent = 'Ready. Click/drag to paint. Export saves your edits.';
+}
+
+// ── Load original video frames as ImageData ─────────────────────────────────
+async function loadOriginalFrames() {
+  status.textContent = 'Decoding original frames…';
+  const video = document.createElement('video');
+  video.src = 'chase-original.mp4';
+  video.muted = true;
+  video.preload = 'auto';
+
+  // Seek-decode approach using an offscreen canvas
+  const ofc  = document.createElement('canvas');
+  ofc.width  = data.block_size * data.width;
+  ofc.height = data.block_size * data.height;
+  const ofc_ctx = ofc.getContext('2d');
+
+  origFrames = new Array(data.n_frames);
+
+  await new Promise(res => { video.oncanplay = res; video.load(); });
+
+  const dur = video.duration;
+  for (let i = 0; i < data.n_frames; i++) {
+    const t = i / fps;
+    if (t >= dur) { origFrames[i] = origFrames[i-1]; continue; }
+    await new Promise(res => {
+      video.onseeked = res;
+      video.currentTime = t;
+    });
+    // Draw the crop region only
+    const sx = data.crop_x;
+    const sy = data.crop_y || 0;
+    const sw = data.block_size * data.width;
+    const sh = data.block_size * data.height;
+    ofc_ctx.drawImage(video, sx, sy, sw, sh, 0, 0, sw, sh);
+    origFrames[i] = ofc_ctx.getImageData(0, 0, sw, sh);
+    if (i % 20 === 0) status.textContent = `Decoding frames… ${i}/${data.n_frames}`;
+  }
+  status.textContent = 'Frames loaded.';
+}
+
+// ── Geometry helpers ────────────────────────────────────────────────────────
+function setZoom(z) {
+  zoom = z;
+  const pw = data.width  * zoom;
+  const ph = data.height * zoom;
+  bgCvs.width  = artCvs.width  = pw;
+  bgCvs.height = artCvs.height = ph;
+  bgCtx.imageSmoothingEnabled  = false;
+  artCtx.imageSmoothingEnabled = false;
+  document.querySelectorAll('#controls button[id^=z]').forEach(b => b.classList.remove('active'));
+  document.getElementById('z'+z+'-btn').classList.add('active');
+}
+
+function canvasToPx(clientX, clientY) {
+  const r   = artCvs.getBoundingClientRect();
+  const ax  = Math.floor((clientX - r.left)  / zoom);
+  const ay  = Math.floor((clientY - r.top)   / zoom);
+  return {ax, ay};
+}
+
+function pixelIndex(ax, ay) {
+  if (ax < 0 || ax >= data.width || ay < 0 || ay >= data.height) return -1;
+  return ay * data.width + ax;
+}
+
+// ── Render ─────────────────────────────────────────────────────────────────
+function showFrame(fi) {
+  frameIdx = fi;
+  scrub.value = fi;
+  finfo.textContent = `frame ${fi} / ${data.n_frames - 1}`;
+
+  // Background — scale up from block-size source
+  if (origFrames && origFrames[fi]) {
+    const tmp = document.createElement('canvas');
+    tmp.width  = data.width  * data.block_size;
+    tmp.height = data.height * data.block_size;
+    tmp.getContext('2d').putImageData(origFrames[fi], 0, 0);
+    bgCtx.drawImage(tmp, 0, 0, bgCvs.width, bgCvs.height);
+  } else {
+    bgCtx.fillStyle = '#000';
+    bgCtx.fillRect(0, 0, bgCvs.width, bgCvs.height);
+  }
+
+  renderArt(fi);
+}
+
+function getLabel(fi, idx) {
+  const e = editedFrames[fi][idx];
+  return e >= 0 ? e : data.frames[fi][idx];
+}
+
+function renderArt(fi) {
+  const W = data.width, H = data.height;
+  const img = artCtx.createImageData(W * zoom, H * zoom);
+  const d   = img.data;
+
+  for (let ay = 0; ay < H; ay++) {
+    for (let ax = 0; ax < W; ax++) {
+      const label = getLabel(fi, ay * W + ax);
+      const col   = PALETTE[label];
+      if (!col) continue;
+      const [r,g,b,a] = col;
+      const fa = Math.round(a * alpha);
+      for (let dy = 0; dy < zoom; dy++) {
+        for (let dx = 0; dx < zoom; dx++) {
+          const px = ((ay * zoom + dy) * W * zoom + (ax * zoom + dx)) * 4;
+          d[px]   = r; d[px+1] = g; d[px+2] = b; d[px+3] = fa;
+        }
+      }
+    }
+  }
+  artCtx.putImageData(img, 0, 0);
+}
+
+// ── Playback ───────────────────────────────────────────────────────────────
+function play() {
+  if (playing) return;
+  playing = true;
+  playBtn.textContent = '⏸ Pause';
+  const interval = 1000 / (fps * speedMult);
+  playTimer = setInterval(() => {
+    showFrame((frameIdx + 1) % data.n_frames);
+  }, interval);
+}
+
+function pause() {
+  playing = false;
+  playBtn.textContent = '▶ Play';
+  clearInterval(playTimer);
+}
+
+playBtn.addEventListener('click', () => playing ? pause() : play());
+scrub.addEventListener('input', () => { pause(); showFrame(+scrub.value); });
+
+document.getElementById('slow-btn').addEventListener('click', () => { speedMult=0.5; setSpeed(); });
+document.getElementById('norm-btn').addEventListener('click', () => { speedMult=1;   setSpeed(); });
+document.getElementById('fast-btn').addEventListener('click', () => { speedMult=2;   setSpeed(); });
+function setSpeed() {
+  ['slow','norm','fast'].forEach(k => document.getElementById(k+'-btn').classList.remove('active'));
+  const map={0.5:'slow',1:'norm',2:'fast'};
+  document.getElementById(map[speedMult]+'-btn').classList.add('active');
+  if (playing) { pause(); play(); }
+}
+
+document.getElementById('alpha-slider').addEventListener('input', e => {
+  alpha = e.target.value / 100;
+  renderArt(frameIdx);
+});
+
+document.getElementById('z1-btn').addEventListener('click', () => { setZoom(1); showFrame(frameIdx); });
+document.getElementById('z2-btn').addEventListener('click', () => { setZoom(2); showFrame(frameIdx); });
+document.getElementById('z3-btn').addEventListener('click', () => { setZoom(3); showFrame(frameIdx); });
+
+// ── Paint tools ────────────────────────────────────────────────────────────
+document.querySelectorAll('.swatch').forEach(s => {
+  s.addEventListener('click', () => {
+    document.querySelectorAll('.swatch').forEach(x => x.classList.remove('active'));
+    s.classList.add('active');
+    paintLabel = +s.dataset.label;
+  });
+});
+
+function paintPixel(clientX, clientY) {
+  const {ax, ay} = canvasToPx(clientX, clientY);
+  const idx = pixelIndex(ax, ay);
+  if (idx < 0) return;
+  const old = editedFrames[frameIdx][idx];
+  if (old === paintLabel) return;
+  undoStack.push({frame: frameIdx, idx, old});
+  editedFrames[frameIdx][idx] = paintLabel;
+  renderArt(frameIdx);
+}
+
+artCvs.addEventListener('mousedown', e => { painting=true; paintPixel(e.clientX, e.clientY); });
+artCvs.addEventListener('mousemove', e => { if (painting) paintPixel(e.clientX, e.clientY); });
+window.addEventListener('mouseup', () => { painting = false; });
+
+artCvs.addEventListener('touchstart', e => {
+  e.preventDefault(); painting=true;
+  paintPixel(e.touches[0].clientX, e.touches[0].clientY);
+}, {passive:false});
+artCvs.addEventListener('touchmove', e => {
+  e.preventDefault();
+  paintPixel(e.touches[0].clientX, e.touches[0].clientY);
+}, {passive:false});
+window.addEventListener('touchend', () => { painting=false; });
+
+// ── Undo ───────────────────────────────────────────────────────────────────
+document.getElementById('undo-btn').addEventListener('click', () => {
+  if (!undoStack.length) return;
+  const {frame, idx, old} = undoStack.pop();
+  editedFrames[frame][idx] = old;
+  if (frame === frameIdx) renderArt(frameIdx);
+});
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+    e.preventDefault();
+    document.getElementById('undo-btn').click();
+  }
+  // Arrow keys for frame navigation
+  if (e.key === 'ArrowRight') { pause(); showFrame(Math.min(frameIdx+1, data.n_frames-1)); }
+  if (e.key === 'ArrowLeft')  { pause(); showFrame(Math.max(frameIdx-1, 0)); }
+  // Number keys to select paint label
+  if (['0','1','2','3'].includes(e.key)) {
+    document.querySelector(`.swatch[data-label="${e.key}"]`).click();
+  }
+});
+
+// ── Export ─────────────────────────────────────────────────────────────────
+document.getElementById('export-btn').addEventListener('click', () => {
+  // Merge edits back into frames
+  const merged = data.frames.map((f, fi) => {
+    const e = editedFrames[fi];
+    return f.map((v, i) => e[i] >= 0 ? e[i] : v);
+  });
+  const out = Object.assign({}, data, {frames: merged, edited: true});
+  const blob = new Blob([JSON.stringify(out, null, 0)], {type:'application/json'});
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = 'pixel_art_edited.json';
+  a.click();
+  status.textContent = 'Exported pixel_art_edited.json';
+});
+
+// ── Keyboard shortcut hint ─────────────────────────────────────────────────
+status.title = '← → navigate frames  |  0-3 select paint  |  Ctrl+Z undo';
+
+init();
+</script>
+</body>
+</html>
