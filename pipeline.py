@@ -281,6 +281,27 @@ def segment_rbcs(enhanced, cell_bodies, corrections, frame_idx, seg_start, seg_e
         if rbc_min <= area <= rbc_max:
             rbc_labels.add(lbl)
 
+    # Pre-screen: remove watershed labels whose centroid falls near a background
+    # correction point. This prevents the density/Hough-seeded initial mask from
+    # including regions Clem explicitly marked as non-cell.
+    # Use ALL background corrections from the segment (not interpolated) —
+    # background points are static spatial vetoes, not moving cell positions.
+    BG_SEED_EXCL_R = 22  # px
+    bg_pts_pre = [(c['x'], c['y']) for c in corrections
+                  if c['label'] == 'background'
+                  and seg_start <= c['frame'] <= seg_end]
+    if bg_pts_pre:
+        to_remove = set()
+        for lbl in rbc_labels:
+            region = (markers == lbl)
+            ys, xs = np.where(region)
+            if len(xs) == 0: continue
+            cxr, cyr = int(xs.mean()), int(ys.mean())
+            if any((cxr - bx)**2 + (cyr - by)**2 <= BG_SEED_EXCL_R**2
+                   for bx, by in bg_pts_pre):
+                to_remove.add(lbl)
+        rbc_labels -= to_remove
+
     # Start with all Hough/density-seeded RBC regions
     rbc_mask = np.zeros((h, w), np.uint8)
     for lbl in rbc_labels:
@@ -347,15 +368,32 @@ def segment_rbcs(enhanced, cell_bodies, corrections, frame_idx, seg_start, seg_e
                 else:
                     cv2.circle(rbc_mask, (xi, yi), int(rbc_radius * 0.85), 255, -1)
 
-    # Erase background corrections — remove the watershed region at that point
-    bg_pts = interpolate_points(corrections, frame_idx, 'background', seg_start, seg_end)
+    # Erase background corrections — remove ALL watershed regions whose centroid
+    # falls within BG_ERASE_R px of the annotation point, plus the exact label.
+    # A fixed radius handles frames where the watershed draws a different boundary
+    # than in the annotated frame (the label at the point may differ).
+    BG_ERASE_R = 22  # px — ~1.3x RBC radius; wide enough to catch boundary shifts
+    # Use all background corrections in segment — static vetoes, not interpolated
+    bg_pts = [(c['x'], c['y']) for c in corrections
+              if c['label'] == 'background'
+              and seg_start <= c['frame'] <= seg_end]
     for x, y in bg_pts:
-        xi, yi = int(np.clip(x,0,w-1)), int(np.clip(y,0,h-1))
+        xi, yi = int(np.clip(x, 0, w-1)), int(np.clip(y, 0, h-1))
+        # Always erase exact label at the point
         lbl = int(markers[yi, xi])
         if lbl >= 2:
             rbc_mask[markers == lbl] = 0
-        else:
-            cv2.circle(rbc_mask, (xi, yi), 20, 0, -1)
+        # Also erase any RBC label whose centroid is within BG_ERASE_R
+        for erase_lbl in list(rbc_labels):
+            region = (markers == erase_lbl)
+            ys, xs = np.where(region)
+            if len(xs) == 0: continue
+            cxr, cyr = int(xs.mean()), int(ys.mean())
+            if (cxr - xi)**2 + (cyr - yi)**2 <= BG_ERASE_R**2:
+                rbc_mask[region] = 0
+                rbc_labels.discard(erase_lbl)
+        # Fallback disc erase centred on annotation point
+        cv2.circle(rbc_mask, (xi, yi), BG_ERASE_R, 0, -1)
 
     # Final guaranteed pass: any RBC correction point not yet covered by the
     # mask gets a disc. The annotator clicked on a real cell — trust them.
@@ -651,43 +689,26 @@ def main():
     print("  Pass 2: temporal smoothing…")
     smooth_masks = smooth_masks_temporally(raw_masks, jump_frames, n_frames)
 
-    # ── Pass 2b: per-component flicker suppression ───────────────────────────
-    # Kill RBC components that don't persist stably across time.
+    # ── Pass 2b: small-fragment flicker suppression ──────────────────────────
+    # Kill small RBC components that don't persist bilaterally across time.
     #
-    # Two complementary checks per component:
+    # Only targets fragments below FLICKER_MAX_AREA (well below true RBC size).
+    # Real RBCs are ~900px (π·17²). Watershed noise fragments are typically
+    # <200px. We only apply the flicker check to these small fragments, leaving
+    # all substantial components untouched.
     #
-    # 1. BILATERAL PERSISTENCE: require at least one hit on EACH side (before
-    #    and after) within ±FLICKER_WINDOW frames. A 2-3 frame ghost cluster
-    #    only has siblings on one side of each member, so it fails this check
-    #    even if total hit count looks ok.
+    # A fragment "persists" if any neighbour frame (within ±FLICKER_WINDOW)
+    # has a component centroid within FLICKER_CENTROID_R px — on BOTH sides.
     #
-    # 2. BACKGROUND EXCLUSION ZONE: if the component centroid falls within
-    #    BG_EXCL_RADIUS pixels of any background correction in the same segment,
-    #    kill it regardless of persistence. This directly uses the "Neither"
-    #    annotations as a spatial veto across the whole segment.
-    #
-    FLICKER_WINDOW       = 4    # frames each side to check
-    FLICKER_OVERLAP_FRAC = 0.15 # overlap must be >= 15% of the component's area
-    BG_EXCL_RADIUS       = 40   # px — background correction exclusion zone radius
+    FLICKER_WINDOW    = 4    # frames each side
+    FLICKER_MAX_AREA  = 200  # px — only check fragments smaller than this
+    FLICKER_CENTROID_R = 25  # px — centroid match radius
 
     print("  Pass 2b: flicker suppression…")
     smooth_masks = list(smooth_masks)
 
     def seg_of(fi):
         return segment_for_frame(fi, jump_frames, n_frames)
-
-    # Pre-build background correction lookup: segment_start → list of (x, y)
-    # Use all background corrections, interpolated across the segment
-    bg_by_seg = {}  # seg_start → [(cx, cy), ...]
-    if corrections:
-        all_segs = set(seg_of(i)[0] for i in range(n_frames) if i not in jump_frames)
-        for seg_s in all_segs:
-            seg_e = seg_of(seg_s)[1]
-            pts = [(c['x'], c['y']) for c in corrections
-                   if c['label'] == 'background'
-                   and seg_s <= c['frame'] <= seg_e]
-            if pts:
-                bg_by_seg[seg_s] = pts
 
     for i in range(n_frames):
         if i in jump_frames:
@@ -698,43 +719,46 @@ def main():
 
         seg_s, seg_e = seg_of(i)
 
-        # Collect before/after neighbour masks separately
-        before_masks, after_masks = [], []
+        # Collect before/after neighbour frames
+        before_frames, after_frames = [], []
         for delta in range(1, FLICKER_WINDOW + 1):
-            for sign, bucket in [(-1, before_masks), (1, after_masks)]:
+            for sign, bucket in [(-1, before_frames), (1, after_frames)]:
                 ni = i + sign * delta
                 if ni < 0 or ni >= n_frames: continue
                 if ni in jump_frames: continue
                 if seg_of(ni)[0] != seg_s: continue
-                bucket.append(smooth_masks[ni][1])
+                bucket.append(ni)
 
-        bg_pts = bg_by_seg.get(seg_s, [])
+        if not before_frames or not after_frames:
+            continue  # at segment edge
 
-        # Check each connected component in this frame's RBC mask
+        # Pre-compute centroids for all neighbour frames (cheap)
+        def get_centroids(frame_idx):
+            nm = smooth_masks[frame_idx][1]
+            nc, lb, st, _ = cv2.connectedComponentsWithStats(nm)
+            return [(st[l, cv2.CC_STAT_LEFT] + st[l, cv2.CC_STAT_WIDTH]  // 2,
+                     st[l, cv2.CC_STAT_TOP]  + st[l, cv2.CC_STAT_HEIGHT] // 2)
+                    for l in range(1, nc)]
+
+        before_centroids = [get_centroids(ni) for ni in before_frames]
+        after_centroids  = [get_centroids(ni) for ni in after_frames]
+
         n_c, lbl_c, stats_c, _ = cv2.connectedComponentsWithStats(rbc_mask)
         rbc_mask_filtered = rbc_mask.copy()
+        cr2 = FLICKER_CENTROID_R ** 2
+
         for l in range(1, n_c):
             area = int(stats_c[l, cv2.CC_STAT_AREA])
-            cx = stats_c[l, cv2.CC_STAT_LEFT] + stats_c[l, cv2.CC_STAT_WIDTH] // 2
+            if area >= FLICKER_MAX_AREA:
+                continue  # leave substantial components alone
+
+            cx = stats_c[l, cv2.CC_STAT_LEFT] + stats_c[l, cv2.CC_STAT_WIDTH]  // 2
             cy = stats_c[l, cv2.CC_STAT_TOP]  + stats_c[l, cv2.CC_STAT_HEIGHT] // 2
 
-            # Check 1: background exclusion zone
-            if any((cx - bx)**2 + (cy - by)**2 <= BG_EXCL_RADIUS**2
-                   for bx, by in bg_pts):
-                rbc_mask_filtered[lbl_c == l] = 0
-                continue
-
-            # Check 2: bilateral persistence — need ≥1 hit before AND ≥1 after
-            if not before_masks or not after_masks:
-                continue  # at segment edge, can't check both sides
-
-            comp = (lbl_c == l).astype(np.uint8) * 255
-            min_overlap = max(1, int(area * FLICKER_OVERLAP_FRAC))
-
-            hit_before = any(int(cv2.bitwise_and(comp, nm).sum()) // 255 >= min_overlap
-                             for nm in before_masks)
-            hit_after  = any(int(cv2.bitwise_and(comp, nm).sum()) // 255 >= min_overlap
-                             for nm in after_masks)
+            hit_before = any(any((cx - ncx)**2 + (cy - ncy)**2 <= cr2 for ncx, ncy in cents)
+                             for cents in before_centroids)
+            hit_after  = any(any((cx - ncx)**2 + (cy - ncy)**2 <= cr2 for ncx, ncy in cents)
+                             for cents in after_centroids)
 
             if not (hit_before and hit_after):
                 rbc_mask_filtered[lbl_c == l] = 0
