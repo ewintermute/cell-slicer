@@ -438,17 +438,25 @@ def segment_neutrophil(frame_bgr, enhanced, corrections, frame_idx,
 
     mask = grabcut_neutrophil(frame_bgr, enhanced, neutro_pts, bg_pts, rbc_pts)
 
-    # Sanity: mask must cover at least one seed point
-    covered = any(
-        mask[int(np.clip(y,0,h-1)), int(np.clip(x,0,w-1))] > 0
-        for x, y in neutro_pts
-    )
-    if not covered:
-        # Fall back to painted seed discs
-        fallback = np.zeros((h, w), np.uint8)
-        for x, y in neutro_pts:
-            cv2.circle(fallback, (int(np.clip(x,0,w-1)), int(np.clip(y,0,h-1))), 12, 255, -1)
-        mask = ndimage.binary_fill_holes(fallback > 0).astype(np.uint8) * 255
+    # Directly paint all neutrophil correction points as definite foreground.
+    # GrabCut boundary may not reach every annotation — painting ensures coverage.
+    # Use a moderate radius (6px) to catch the local cell boundary, then close
+    # to merge with the GrabCut region.
+    seed_layer = np.zeros((h, w), np.uint8)
+    for x, y in neutro_pts:
+        cv2.circle(seed_layer, (int(np.clip(x,0,w-1)), int(np.clip(y,0,h-1))), 6, 255, -1)
+
+    # Merge: union of GrabCut result and painted seeds
+    combined = cv2.bitwise_or(mask, seed_layer)
+    # Close to connect seeds to the main body (bridges small gaps)
+    k_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (11, 11))
+    combined = cv2.morphologyEx(combined, cv2.MORPH_CLOSE, k_close)
+    # Keep only the largest connected component (no leaked fragments)
+    n_c, lbl, stats, _ = cv2.connectedComponentsWithStats(combined)
+    if n_c > 1:
+        best = int(np.argmax(stats[1:, cv2.CC_STAT_AREA])) + 1
+        combined = ((lbl == best) * 255).astype(np.uint8)
+    mask = ndimage.binary_fill_holes(combined > 0).astype(np.uint8) * 255
 
     return mask, tier
 
@@ -646,14 +654,34 @@ def main():
     # ── Pass 3: render output video ──────────────────────────────────────────
     print("  Pass 3: rendering…")
     out_frames = []
+    prev_neutro_mask = None
+    prev_rbc_mask    = None
     for i in range(n_frames):
         frame = frames[i]
         is_jump = i in jump_frames
         if is_jump:
+            prev_neutro_mask = None
+            prev_rbc_mask    = None
             out = frame.copy()
             draw_legend(out, stage_jump=True)
         else:
             neutro_mask, rbc_mask = smooth_masks[i]
+
+            # ── Cross-object boundary constraint ──────────────────────────
+            # Objects don't suddenly jump to fill another object's space.
+            # If neutrophil mask gained pixels that were RBC in prior frame, suppress.
+            if prev_neutro_mask is not None and prev_rbc_mask is not None:
+                new_neutro   = cv2.bitwise_and(neutro_mask, cv2.bitwise_not(prev_neutro_mask))
+                invading_rbc = cv2.bitwise_and(new_neutro, prev_rbc_mask)
+                invasion_px = int(invading_rbc.sum()) // 255
+                new_neutro_px = int(new_neutro.sum()) // 255
+                # Only suppress if invasion is large AND accounts for most of the new area
+                # (i.e. truly jumping into RBC space, not just normal boundary expansion)
+                if invasion_px > 400 and new_neutro_px > 0 and invasion_px / max(new_neutro_px, 1) > 0.5:
+                    neutro_mask = cv2.bitwise_and(neutro_mask, cv2.bitwise_not(invading_rbc))
+
+            prev_neutro_mask = neutro_mask.copy()
+            prev_rbc_mask    = rbc_mask.copy()
 
             # Fill donut holes in RBC mask (applied after smoothing)
             rbc_mask = ndimage.binary_fill_holes(rbc_mask > 0).astype(np.uint8) * 255
