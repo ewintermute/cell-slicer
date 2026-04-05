@@ -652,20 +652,42 @@ def main():
     smooth_masks = smooth_masks_temporally(raw_masks, jump_frames, n_frames)
 
     # ── Pass 2b: per-component flicker suppression ───────────────────────────
-    # Kill any RBC connected component that doesn't persist across time.
-    # Strategy: for each component in frame i, check a ±FLICKER_WINDOW window.
-    # A component is a "ghost" if fewer than FLICKER_MIN_HITS neighbours contain
-    # a region with meaningful pixel overlap (>= FLICKER_OVERLAP_FRAC * area).
-    # This catches both single-frame ghosts and short 2-3 frame bursts.
-    FLICKER_WINDOW       = 3    # frames each side to check
-    FLICKER_MIN_HITS     = 2    # must overlap with at least this many neighbours
+    # Kill RBC components that don't persist stably across time.
+    #
+    # Two complementary checks per component:
+    #
+    # 1. BILATERAL PERSISTENCE: require at least one hit on EACH side (before
+    #    and after) within ±FLICKER_WINDOW frames. A 2-3 frame ghost cluster
+    #    only has siblings on one side of each member, so it fails this check
+    #    even if total hit count looks ok.
+    #
+    # 2. BACKGROUND EXCLUSION ZONE: if the component centroid falls within
+    #    BG_EXCL_RADIUS pixels of any background correction in the same segment,
+    #    kill it regardless of persistence. This directly uses the "Neither"
+    #    annotations as a spatial veto across the whole segment.
+    #
+    FLICKER_WINDOW       = 4    # frames each side to check
     FLICKER_OVERLAP_FRAC = 0.15 # overlap must be >= 15% of the component's area
+    BG_EXCL_RADIUS       = 40   # px — background correction exclusion zone radius
 
     print("  Pass 2b: flicker suppression…")
     smooth_masks = list(smooth_masks)
 
     def seg_of(fi):
         return segment_for_frame(fi, jump_frames, n_frames)
+
+    # Pre-build background correction lookup: segment_start → list of (x, y)
+    # Use all background corrections, interpolated across the segment
+    bg_by_seg = {}  # seg_start → [(cx, cy), ...]
+    if corrections:
+        all_segs = set(seg_of(i)[0] for i in range(n_frames) if i not in jump_frames)
+        for seg_s in all_segs:
+            seg_e = seg_of(seg_s)[1]
+            pts = [(c['x'], c['y']) for c in corrections
+                   if c['label'] == 'background'
+                   and seg_s <= c['frame'] <= seg_e]
+            if pts:
+                bg_by_seg[seg_s] = pts
 
     for i in range(n_frames):
         if i in jump_frames:
@@ -676,36 +698,45 @@ def main():
 
         seg_s, seg_e = seg_of(i)
 
-        # Collect neighbour masks in same segment, within FLICKER_WINDOW
-        neighbour_masks = []
-        for delta in range(-FLICKER_WINDOW, FLICKER_WINDOW + 1):
-            if delta == 0:
-                continue
-            ni = i + delta
-            if ni < 0 or ni >= n_frames:
-                continue
-            if ni in jump_frames:
-                continue
-            if seg_of(ni)[0] != seg_s:
-                continue
-            neighbour_masks.append(smooth_masks[ni][1])
+        # Collect before/after neighbour masks separately
+        before_masks, after_masks = [], []
+        for delta in range(1, FLICKER_WINDOW + 1):
+            for sign, bucket in [(-1, before_masks), (1, after_masks)]:
+                ni = i + sign * delta
+                if ni < 0 or ni >= n_frames: continue
+                if ni in jump_frames: continue
+                if seg_of(ni)[0] != seg_s: continue
+                bucket.append(smooth_masks[ni][1])
 
-        if len(neighbour_masks) < FLICKER_MIN_HITS:
-            continue  # not enough context, leave mask alone
+        bg_pts = bg_by_seg.get(seg_s, [])
 
         # Check each connected component in this frame's RBC mask
         n_c, lbl_c, stats_c, _ = cv2.connectedComponentsWithStats(rbc_mask)
         rbc_mask_filtered = rbc_mask.copy()
         for l in range(1, n_c):
-            comp = (lbl_c == l).astype(np.uint8) * 255
             area = int(stats_c[l, cv2.CC_STAT_AREA])
+            cx = stats_c[l, cv2.CC_STAT_LEFT] + stats_c[l, cv2.CC_STAT_WIDTH] // 2
+            cy = stats_c[l, cv2.CC_STAT_TOP]  + stats_c[l, cv2.CC_STAT_HEIGHT] // 2
+
+            # Check 1: background exclusion zone
+            if any((cx - bx)**2 + (cy - by)**2 <= BG_EXCL_RADIUS**2
+                   for bx, by in bg_pts):
+                rbc_mask_filtered[lbl_c == l] = 0
+                continue
+
+            # Check 2: bilateral persistence — need ≥1 hit before AND ≥1 after
+            if not before_masks or not after_masks:
+                continue  # at segment edge, can't check both sides
+
+            comp = (lbl_c == l).astype(np.uint8) * 255
             min_overlap = max(1, int(area * FLICKER_OVERLAP_FRAC))
 
-            hits = sum(
-                1 for nm in neighbour_masks
-                if int(cv2.bitwise_and(comp, nm).sum()) // 255 >= min_overlap
-            )
-            if hits < FLICKER_MIN_HITS:
+            hit_before = any(int(cv2.bitwise_and(comp, nm).sum()) // 255 >= min_overlap
+                             for nm in before_masks)
+            hit_after  = any(int(cv2.bitwise_and(comp, nm).sum()) // 255 >= min_overlap
+                             for nm in after_masks)
+
+            if not (hit_before and hit_after):
                 rbc_mask_filtered[lbl_c == l] = 0
 
         smooth_masks[i] = (neutro_mask, rbc_mask_filtered)
