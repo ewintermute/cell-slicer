@@ -152,7 +152,7 @@ async function decodeFrames() {
 
   origFrames = new Array(data.n_frames);
   for (let ai = 0; ai < data.n_frames; ai++) {
-    const t = src[ai] / fps;
+    const t = (src[ai] + 0.5) / fps;
     if (t > dur) { origFrames[ai] = origFrames[ai-1]; continue; }
     await new Promise(r => { vid.onseeked = r; vid.currentTime = t; });
     ox.drawImage(vid, 0, 0, 320, 240, 0, 0, W, H);
