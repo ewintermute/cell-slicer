@@ -67,9 +67,11 @@ input[type=range]{cursor:pointer}
   <span class="swatch" data-label="1"><span class="dot" style="background:#cc2222"></span>RBC fill</span>
   <span class="swatch" data-label="2"><span class="dot" style="background:#882299"></span>RBC edge</span>
   <span class="swatch" data-label="3"><span class="dot" style="background:#22cc44"></span>Neutrophil</span>
+  <span class="swatch" data-label="4"><span class="dot" style="background:#ffc800;border:1px solid #aa8800"></span>Microbe</span>
   <span class="swatch" data-label="stamp" id="stamp-swatch"><span class="dot" style="background:radial-gradient(circle,#cc2222 40%,#882299 100%)"></span>Stamp RBC</span>
   <button id="undo-btn">↩ Undo</button>
   <button id="export-btn">⬇ Export</button>
+  <button id="export-microbe-btn" style="background:#2a2000;border-color:#aa8800">⬇ Export Microbe</button>
 </div>
 
 <!-- canvas -->
@@ -81,7 +83,7 @@ input[type=range]{cursor:pointer}
 
 <div id="status">Loading…</div>
 <div class="row" style="font-size:10px;color:#555">
-  ← → navigate &nbsp;|&nbsp; 0–3 paint &nbsp;|&nbsp; S stamp RBC &nbsp;|&nbsp; Ctrl+Z undo &nbsp;|&nbsp; click+drag to paint
+  ← → navigate &nbsp;|&nbsp; 0–4 paint &nbsp;|&nbsp; M microbe &nbsp;|&nbsp; S stamp RBC &nbsp;|&nbsp; Ctrl+Z undo &nbsp;|&nbsp; click+drag to paint
 </div>
 
 <script>
@@ -91,6 +93,7 @@ const PAL = {
   1: [204,  34,  34, 210],
   2: [136,  34, 153, 240],
   3: [ 34, 204,  68, 220],
+  4: [255, 200,   0, 255],   // microbe — bright yellow
 };
 
 // ── State ─────────────────────────────────────────────────────────────────
@@ -381,6 +384,9 @@ document.addEventListener('keydown', e => {
     '1': () => selectTool(1),
     '2': () => selectTool(2),
     '3': () => selectTool(3),
+    '4': () => selectTool(4),
+    'm': () => selectTool(4),
+    'M': () => selectTool(4),
     's': () => selectTool('stamp'),
     'S': () => selectTool('stamp'),
     ' ': () => { e.preventDefault(); playing ? pause() : play(); },
@@ -402,6 +408,51 @@ document.getElementById('export-btn').addEventListener('click', () => {
   });
   a.click();
   status.textContent = 'Exported pixel_art_edited.json ✓';
+});
+
+// ── Microbe export ────────────────────────────────────────────────────────
+document.getElementById('export-microbe-btn').addEventListener('click', () => {
+  const W = data.width;
+  const microbe_positions = [];
+  for (let i = 0; i < data.n_frames; i++) {
+    const e = edited[i];
+    let xs = [], ys = [];
+    for (let idx = 0; idx < W * data.height; idx++) {
+      const label = e[idx] >= 0 ? e[idx] : data.frames[i][idx];
+      if (label === 4) {
+        xs.push(idx % W);
+        ys.push(Math.floor(idx / W));
+      }
+    }
+    if (xs.length > 0) {
+      const cx = xs.reduce((a,b)=>a+b,0)/xs.length;
+      const cy = ys.reduce((a,b)=>a+b,0)/ys.length;
+      microbe_positions.push({
+        frame: i,
+        src_index: data.src_indices ? data.src_indices[i] : i,
+        cx: Math.round(cx * 10) / 10,
+        cy: Math.round(cy * 10) / 10,
+        pixels: xs.map((x,k) => [x, ys[k]])
+      });
+    } else {
+      microbe_positions.push({frame: i, src_index: data.src_indices ? data.src_indices[i] : i, cx: null, cy: null, pixels: []});
+    }
+  }
+  const out = {
+    n_frames: data.n_frames,
+    width: data.width,
+    height: data.height,
+    label: 4,
+    name: 'microbe',
+    exported_at: new Date().toISOString(),
+    frames: microbe_positions
+  };
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([JSON.stringify(out, null, 2)],{type:'application/json'})),
+    download: 'microbe_positions.json'
+  });
+  a.click();
+  status.textContent = 'Exported microbe_positions.json ✓';
 });
 
 init();
