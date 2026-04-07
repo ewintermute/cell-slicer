@@ -4,7 +4,7 @@
   "height": 48,
   "label": 4,
   "name": "microbe",
-  "exported_at": "2026-04-07T01:03:12.489Z",
+  "exported_at": "2026-04-07T12:56:02.854Z",
   "frames": [
     {
       "frame": 0,
@@ -5438,9 +5438,26 @@
     {
       "frame": 241,
       "src_index": 248,
-      "cx": null,
-      "cy": null,
-      "pixels": []
+      "cx": 45,
+      "cy": 14.5,
+      "pixels": [
+        [
+          29,
+          4
+        ],
+        [
+          30,
+          5
+        ],
+        [
+          60,
+          24
+        ],
+        [
+          61,
+          25
+        ]
+      ]
     },
     {
       "frame": 242,
