@@ -95,7 +95,7 @@ function drawFrame(fi) {
   frameSlider.value = fi;
   infoEl.textContent = `frame ${fi} / ${N-1}  |  x0=${x0} y0=${y0}  |  ${fps} fps`;
   drawArt(fi);
-  if (videoEl) videoEl.currentTime = (fi + 0.5) / 15;
+  if (videoEl) videoEl.currentTime = srcTime(fi);
 }
 
 fetch('pixel_art_48x32.json').then(r => r.json()).then(d => {
@@ -122,6 +122,12 @@ fetch('pixel_art_48x32.json').then(r => r.json()).then(d => {
   setZoom(zoom);
   drawFrame(0);
 });
+
+function srcTime(fi) {
+  // Use src_indices to map pixel art frame → source video timestamp
+  const idx = artData.src_indices ? artData.src_indices[fi] : fi;
+  return (idx + 0.5) / (artData.fps || 15);
+}
 
 document.getElementById('btn-play').addEventListener('click', () => {
   playing = !playing;

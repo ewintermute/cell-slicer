@@ -100,7 +100,7 @@ function drawFrame(fi) {
   if (videoEl) {
     const srcFPS = 15;
     const t = (fi + 0.5) / srcFPS;
-    videoEl.currentTime = t;
+    videoEl.currentTime = srcTime(fi);
     // Draw will happen in onseeked
   }
 
@@ -155,6 +155,11 @@ fetch('pixel_art_32.json').then(r => r.json()).then(d => {
   setZoom(zoom);
   drawFrame(0);
 });
+
+function srcTime(fi) {
+  const idx = artData.src_indices ? artData.src_indices[fi] : fi;
+  return (idx + 0.5) / (artData.fps || 15);
+}
 
 // Controls
 document.getElementById('btn-play').addEventListener('click', () => {
