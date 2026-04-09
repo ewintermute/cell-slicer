@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cell Slicer — 64×32 Cropped View</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#111;color:#ddd;font-family:monospace;display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px;user-select:none}
+h1{font-size:14px;color:#aaa;letter-spacing:.08em}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center}
+button{background:#222;color:#ccc;border:1px solid #3a3a3a;border-radius:3px;padding:4px 10px;cursor:pointer;font-family:monospace;font-size:12px}
+button:hover{background:#2e2e2e}
+#wrap{position:relative;line-height:0}
+canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+#info{font-size:11px;color:#666;text-align:center}
+input[type=range]{accent-color:#888}
+</style>
+</head>
+<body>
+<h1>CELL SLICER — 64×32 SMOOTH PAN</h1>
+
+<div class="row">
+  <button id="btn-play">▶ Play</button>
+  <button id="btn-slower">slower</button>
+  <button id="btn-faster">faster</button>
+  <label style="font-size:12px;color:#888">zoom:
+    <select id="zoom-sel" style="background:#222;color:#ccc;border:1px solid #3a3a3a;font-family:monospace;font-size:12px">
+      <option value="6">6×</option>
+      <option value="8">8×</option>
+      <option value="10" selected>10×</option>
+      <option value="12">12×</option>
+    </select>
+  </label>
+  <label style="font-size:12px;color:#888">overlay:
+    <input type="range" id="alpha-slider" min="0" max="100" value="90" style="width:80px;vertical-align:middle">
+  </label>
+</div>
+
+<div class="row">
+  <button id="btn-prev">◀</button>
+  <input type="range" id="frame-slider" min="0" value="0" style="width:400px;accent-color:#888">
+  <button id="btn-next">▶</button>
+</div>
+
+<div id="wrap">
+  <canvas id="bg-canvas"></canvas>
+  <canvas id="art-canvas" style="position:absolute;top:0;left:0"></canvas>
+</div>
+
+<div id="info">frame 0 / 0 &nbsp;|&nbsp; y0=0 &nbsp;|&nbsp; 15 fps</div>
+
+<script>
+const COLORS = { 0:null, 1:'#c0392b', 2:'#8e44ad', 3:'#27ae60', 4:'#f1c40f' };
+
+let artData = null, videoEl = null;
+let zoom = 10, alpha = 0.9, fps = 15;
+let playing = false, curFrame = 0, playTimer = null;
+let N = 0, ART_W = 64, ART_H = 32;
+
+const bgCanvas = document.getElementById('bg-canvas');
+const artCanvas = document.getElementById('art-canvas');
+const bgCtx = bgCanvas.getContext('2d');
+const artCtx = artCanvas.getContext('2d');
+const frameSlider = document.getElementById('frame-slider');
+const infoEl = document.getElementById('info');
+
+function setZoom(z) {
+  zoom = z;
+  bgCanvas.width = artCanvas.width = ART_W * zoom;
+  bgCanvas.height = artCanvas.height = ART_H * zoom;
+  drawFrame(curFrame);
+}
+
+function drawArt(fi) {
+  artCtx.clearRect(0, 0, artCanvas.width, artCanvas.height);
+  artCtx.globalAlpha = alpha;
+  const frame = artData.frames[fi];
+  for (let y = 0; y < ART_H; y++) {
+    for (let x = 0; x < ART_W; x++) {
+      const lbl = frame[y * ART_W + x];
+      if (!lbl) continue;
+      artCtx.fillStyle = COLORS[lbl] || '#fff';
+      artCtx.fillRect(x * zoom, y * zoom, zoom, zoom);
+    }
+  }
+  artCtx.globalAlpha = 1.0;
+}
+
+function drawFrame(fi) {
+  if (!artData) return;
+  curFrame = fi;
+  const y0 = artData.crop_y0[fi];
+  frameSlider.value = fi;
+  infoEl.textContent = `frame ${fi} / ${N-1}  |  y0=${y0}  |  ${fps} fps`;
+  drawArt(fi);
+  if (videoEl) {
+    videoEl.currentTime = (fi + 0.5) / 15;
+  }
+}
+
+fetch('pixel_art_64x32.json').then(r => r.json()).then(d => {
+  artData = d;
+  N = d.n_frames;
+  ART_W = d.n_cols || 64;
+  ART_H = d.n_rows || 32;
+  frameSlider.max = N - 1;
+
+  videoEl = document.createElement('video');
+  videoEl.src = 'chase-original.mp4';
+  videoEl.muted = true;
+  videoEl.preload = 'auto';
+  videoEl.addEventListener('seeked', () => {
+    const y0 = artData.crop_y0[curFrame];
+    const srcW = 320, srcH = 240;
+    const blockH = srcH / 48; // 5px per art row
+    const srcY = y0 * blockH;
+    bgCtx.drawImage(videoEl,
+      0, srcY, srcW, ART_H * blockH,
+      0, 0, bgCanvas.width, bgCanvas.height
+    );
+  });
+
+  setZoom(zoom);
+  drawFrame(0);
+});
+
+document.getElementById('btn-play').addEventListener('click', () => {
+  playing = !playing;
+  document.getElementById('btn-play').textContent = playing ? '⏸ Pause' : '▶ Play';
+  if (playing) tick(); else clearTimeout(playTimer);
+});
+function tick() {
+  if (!playing) return;
+  curFrame = (curFrame + 1) % N;
+  drawFrame(curFrame);
+  playTimer = setTimeout(tick, 1000 / fps);
+}
+document.getElementById('btn-slower').addEventListener('click', () => { fps = Math.max(1, fps-2); });
+document.getElementById('btn-faster').addEventListener('click', () => { fps = Math.min(30, fps+2); });
+frameSlider.addEventListener('input', () => drawFrame(+frameSlider.value));
+document.getElementById('btn-prev').addEventListener('click', () => drawFrame(Math.max(0, curFrame-1)));
+document.getElementById('btn-next').addEventListener('click', () => drawFrame(Math.min(N-1, curFrame+1)));
+document.getElementById('zoom-sel').addEventListener('change', e => setZoom(+e.target.value));
+document.getElementById('alpha-slider').addEventListener('input', e => { alpha = e.target.value/100; drawFrame(curFrame); });
+document.addEventListener('keydown', e => {
+  if (e.key==='ArrowLeft')  drawFrame(Math.max(0, curFrame-1));
+  if (e.key==='ArrowRight') drawFrame(Math.min(N-1, curFrame+1));
+  if (e.key===' ') { e.preventDefault(); document.getElementById('btn-play').click(); }
+});
+</script>
+</body>
+</html>
