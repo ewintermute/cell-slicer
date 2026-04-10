@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cell Slicer — Compare</title>
+<title>Cell Slicer — Compare (FP)</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#111;color:#ddd;font-family:monospace;display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px;user-select:none}
@@ -23,6 +23,13 @@ select{background:#222;color:#ccc;border:1px solid #3a3a3a;font-family:monospace
 <body>
 
 <h1>Cell Slicer — Original · Crop · FP Art</h1>
+<div style="font-size:10px;color:#555;display:flex;gap:14px;flex-wrap:wrap;justify-content:center">
+  <span><span style="color:#FF8000">■</span> RBC (mKO2)</span>
+  <span><span style="color:#FF0000">■</span> RBC edge (mRFP)</span>
+  <span><span style="color:#00C8FF">■</span> Neutrophil (mTurquoise2)</span>
+  <span><span style="color:#3333FF">■</span> Leading edge (Azurite)</span>
+  <span><span style="color:#AAFF00">■</span> Bacterium (Venus)</span>
+</div>
 
 <div class="controls">
   <button id="btn-play">▶ Play</button>
@@ -64,11 +71,12 @@ select{background:#222;color:#ccc;border:1px solid #3a3a3a;font-family:monospace
 <script>
 // ── FP color palette ──────────────────────────────────────────────────────────
 const FP_COLORS = {
-  0: null,           // background — leave black
-  1: '#FF8000',      // RBC interior  — mKO2
-  2: '#FF0000',      // RBC edge      — mRFP
-  3: '#00C8FF',      // Neutrophil    — mTurquoise2
-  4: '#AAFF00',      // Bacterium     — Venus
+  0: null,           // background        — leave black
+  1: '#FF8000',      // RBC interior      — mKO2
+  2: '#FF0000',      // RBC edge          — mRFP
+  3: '#00C8FF',      // Neutrophil        — mTurquoise2
+  4: '#AAFF00',      // Bacterium         — Venus
+  5: '#3333FF',      // Neutrophil lead   — Azurite
 };
 
 // ── State ─────────────────────────────────────────────────────────────────────
@@ -152,7 +160,7 @@ function drawFrame(fi) {
 }
 
 // ── Load data ─────────────────────────────────────────────────────────────────
-fetch('pixel_art_48x32.json').then(r => r.json()).then(d => {
+fetch('pixel_art_le_48x32.json').then(r => r.json()).then(d => {
   artData = d;
   N = d.n_frames;
   ART_W = d.n_cols || 48;
