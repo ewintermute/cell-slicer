@@ -87,14 +87,31 @@ function drawArt(fi) {
   artCtx.globalAlpha = 1.0;
 }
 
+function srcTime(fi) {
+  const idx = artData.src_indices ? artData.src_indices[fi] : fi;
+  return (idx + 0.5) / (artData.fps || 15);
+}
+
+function seekVideo(fi) {
+  const onSeeked = () => {
+    videoEl.removeEventListener('seeked', onSeeked);
+    const y0 = artData.crop_y0[fi];
+    bgCtx.drawImage(videoEl,
+      0, y0 * 5, ART_W * 5, ART_H * 5,
+      0, 0, bgCanvas.width, bgCanvas.height
+    );
+  };
+  videoEl.addEventListener('seeked', onSeeked);
+  videoEl.currentTime = srcTime(fi);
+}
+
 function drawFrame(fi) {
   if (!artData) return;
   curFrame = fi;
-  const y0 = artData.crop_y0[fi];
   frameSlider.value = fi;
-  infoEl.textContent = `frame ${fi} / ${N-1}  |  y0=${y0}  |  ${fps} fps`;
+  infoEl.textContent = `frame ${fi} / ${N-1}  |  y0=${artData.crop_y0[fi]}  |  ${fps} fps`;
   drawArt(fi);
-  if (videoEl) videoEl.currentTime = srcTime(fi);
+  if (videoEl) seekVideo(fi);
 }
 
 fetch('pixel_art_64x32.json').then(r => r.json()).then(d => {
@@ -108,25 +125,10 @@ fetch('pixel_art_64x32.json').then(r => r.json()).then(d => {
   videoEl.src = 'chase-original.mp4';
   videoEl.muted = true;
   videoEl.preload = 'auto';
-  videoEl.addEventListener('seeked', () => {
-    const y0 = artData.crop_y0[curFrame];
-    const srcW = 320, srcH = 240;
-    const blockH = srcH / 48; // 5px per art row
-    const srcY = y0 * blockH;
-    bgCtx.drawImage(videoEl,
-      0, srcY, srcW, ART_H * blockH,
-      0, 0, bgCanvas.width, bgCanvas.height
-    );
-  });
 
   setZoom(zoom);
   drawFrame(0);
 });
-
-function srcTime(fi) {
-  const idx = artData.src_indices ? artData.src_indices[fi] : fi;
-  return (idx + 0.5) / (artData.fps || 15);
-}
 
 document.getElementById('btn-play').addEventListener('click', () => {
   playing = !playing;

@@ -87,15 +87,33 @@ function drawArt(fi) {
   artCtx.globalAlpha = 1.0;
 }
 
+function srcTime(fi) {
+  const idx = artData.src_indices ? artData.src_indices[fi] : fi;
+  return (idx + 0.5) / (artData.fps || 15);
+}
+
+function seekVideo(fi) {
+  // Each seek captures fi in closure so the seeked handler always draws the right frame
+  const onSeeked = () => {
+    videoEl.removeEventListener('seeked', onSeeked);
+    const x0 = artData.crop_x0[fi];
+    const y0 = artData.crop_y0[fi];
+    bgCtx.drawImage(videoEl,
+      x0 * 5, y0 * 5, ART_W * 5, ART_H * 5,
+      0, 0, bgCanvas.width, bgCanvas.height
+    );
+  };
+  videoEl.addEventListener('seeked', onSeeked);
+  videoEl.currentTime = srcTime(fi);
+}
+
 function drawFrame(fi) {
   if (!artData) return;
   curFrame = fi;
-  const x0 = artData.crop_x0[fi];
-  const y0 = artData.crop_y0[fi];
   frameSlider.value = fi;
-  infoEl.textContent = `frame ${fi} / ${N-1}  |  x0=${x0} y0=${y0}  |  ${fps} fps`;
+  infoEl.textContent = `frame ${fi} / ${N-1}  |  x0=${artData.crop_x0[fi]} y0=${artData.crop_y0[fi]}  |  ${fps} fps`;
   drawArt(fi);
-  if (videoEl) videoEl.currentTime = srcTime(fi);
+  if (videoEl) seekVideo(fi);
 }
 
 fetch('pixel_art_48x32.json').then(r => r.json()).then(d => {
@@ -109,25 +127,10 @@ fetch('pixel_art_48x32.json').then(r => r.json()).then(d => {
   videoEl.src = 'chase-original.mp4';
   videoEl.muted = true;
   videoEl.preload = 'auto';
-  videoEl.addEventListener('seeked', () => {
-    const x0 = artData.crop_x0[curFrame];
-    const y0 = artData.crop_y0[curFrame];
-    // Source video is 320×240, art is 64×48, so each art pixel = 5×5 source pixels
-    bgCtx.drawImage(videoEl,
-      x0 * 5, y0 * 5, ART_W * 5, ART_H * 5,
-      0, 0, bgCanvas.width, bgCanvas.height
-    );
-  });
 
   setZoom(zoom);
   drawFrame(0);
 });
-
-function srcTime(fi) {
-  // Use src_indices to map pixel art frame → source video timestamp
-  const idx = artData.src_indices ? artData.src_indices[fi] : fi;
-  return (idx + 0.5) / (artData.fps || 15);
-}
 
 document.getElementById('btn-play').addEventListener('click', () => {
   playing = !playing;
