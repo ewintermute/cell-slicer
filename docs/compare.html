@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cell Slicer — Compare</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#111;color:#ddd;font-family:monospace;display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px;user-select:none}
+h1{font-size:13px;color:#888;letter-spacing:.1em;text-transform:uppercase}
+.panels{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;justify-content:center}
+.panel{display:flex;flex-direction:column;align-items:center;gap:4px}
+.label{font-size:10px;color:#666;letter-spacing:.08em;text-transform:uppercase}
+canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;border:1px solid #2a2a2a}
+.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center}
+button{background:#222;color:#ccc;border:1px solid #3a3a3a;border-radius:3px;padding:4px 10px;cursor:pointer;font-family:monospace;font-size:12px}
+button:hover{background:#2e2e2e}
+input[type=range]{accent-color:#888}
+select{background:#222;color:#ccc;border:1px solid #3a3a3a;font-family:monospace;font-size:12px;padding:2px 4px}
+#info{font-size:11px;color:#555;text-align:center}
+</style>
+</head>
+<body>
+
+<h1>Cell Slicer — Original · Crop · FP Art</h1>
+
+<div class="controls">
+  <button id="btn-play">▶ Play</button>
+  <button id="btn-slower">−fps</button>
+  <button id="btn-faster">+fps</button>
+  <label style="font-size:12px;color:#888">zoom:
+    <select id="zoom-sel">
+      <option value="4">4×</option>
+      <option value="6">6×</option>
+      <option value="8" selected>8×</option>
+      <option value="10">10×</option>
+    </select>
+  </label>
+</div>
+
+<div class="controls">
+  <button id="btn-prev">◀</button>
+  <input type="range" id="frame-slider" min="0" value="0" style="width:460px">
+  <button id="btn-next">▶</button>
+</div>
+
+<div class="panels">
+  <div class="panel">
+    <div class="label">Original</div>
+    <canvas id="c-orig"></canvas>
+  </div>
+  <div class="panel">
+    <div class="label">Crop (48×32)</div>
+    <canvas id="c-crop"></canvas>
+  </div>
+  <div class="panel">
+    <div class="label">FP Pixel Art</div>
+    <canvas id="c-fp"></canvas>
+  </div>
+</div>
+
+<div id="info">loading…</div>
+
+<script>
+// ── FP color palette ──────────────────────────────────────────────────────────
+const FP_COLORS = {
+  0: null,           // background — leave black
+  1: '#FF8000',      // RBC interior  — mKO2
+  2: '#FF0000',      // RBC edge      — mRFP
+  3: '#00C8FF',      // Neutrophil    — mTurquoise2
+  4: '#AAFF00',      // Bacterium     — Venus
+};
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let artData = null, videoEl = null;
+let zoom = 8, fps = 15;
+let playing = false, curFrame = 0, playTimer = null;
+let N = 0, ART_W = 48, ART_H = 32;
+// Source video native size
+const SRC_W = 320, SRC_H = 240, BLOCK = 5; // 5 source px per art px
+
+// ── Canvas refs ───────────────────────────────────────────────────────────────
+const cOrig = document.getElementById('c-orig');
+const cCrop = document.getElementById('c-crop');
+const cFP   = document.getElementById('c-fp');
+const ctxOrig = cOrig.getContext('2d');
+const ctxCrop = cCrop.getContext('2d');
+const ctxFP   = cFP.getContext('2d');
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function setZoom(z) {
+  zoom = z;
+  // Original: full 64×48 art pixels → show at same output size as crop for easy comparison
+  // We draw the full source video frame scaled to 64*zoom × 48*zoom
+  cOrig.width  = 64 * zoom;
+  cOrig.height = 48 * zoom;
+  cCrop.width  = ART_W * zoom;
+  cCrop.height = ART_H * zoom;
+  cFP.width    = ART_W * zoom;
+  cFP.height   = ART_H * zoom;
+  ctxOrig.imageSmoothingEnabled = false;
+  ctxCrop.imageSmoothingEnabled = false;
+  ctxFP.imageSmoothingEnabled   = false;
+  drawFrame(curFrame);
+}
+
+function srcTime(fi) {
+  const idx = artData.src_indices ? artData.src_indices[fi] : fi;
+  return (idx + 0.5) / (artData.fps || 15);
+}
+
+function seekAndDraw(fi) {
+  const onSeeked = () => {
+    videoEl.removeEventListener('seeked', onSeeked);
+    // Panel 1: full original frame (all 64×48 art pixels = full 320×240 src)
+    ctxOrig.drawImage(videoEl, 0, 0, SRC_W, SRC_H, 0, 0, cOrig.width, cOrig.height);
+    // Panel 2: cropped region from source video
+    const x0 = artData.crop_x0[fi];
+    const y0 = artData.crop_y0[fi];
+    ctxCrop.drawImage(videoEl,
+      x0 * BLOCK, y0 * BLOCK, ART_W * BLOCK, ART_H * BLOCK,
+      0, 0, cCrop.width, cCrop.height
+    );
+  };
+  videoEl.addEventListener('seeked', onSeeked);
+  videoEl.currentTime = srcTime(fi);
+}
+
+function drawFP(fi) {
+  ctxFP.fillStyle = '#111111';
+  ctxFP.fillRect(0, 0, cFP.width, cFP.height);
+  const frame = artData.frames[fi];
+  for (let y = 0; y < ART_H; y++) {
+    for (let x = 0; x < ART_W; x++) {
+      const lbl = frame[y * ART_W + x];
+      const col = FP_COLORS[lbl];
+      if (!col) continue;
+      ctxFP.fillStyle = col;
+      ctxFP.fillRect(x * zoom, y * zoom, zoom, zoom);
+    }
+  }
+}
+
+function drawFrame(fi) {
+  if (!artData) return;
+  curFrame = fi;
+  document.getElementById('frame-slider').value = fi;
+  document.getElementById('info').textContent =
+    `frame ${fi} / ${N-1}  |  src ${artData.src_indices ? artData.src_indices[fi] : fi}  |  crop x0=${artData.crop_x0[fi]} y0=${artData.crop_y0[fi]}  |  ${fps} fps`;
+  drawFP(fi);
+  if (videoEl) seekAndDraw(fi);
+}
+
+// ── Load data ─────────────────────────────────────────────────────────────────
+fetch('pixel_art_48x32.json').then(r => r.json()).then(d => {
+  artData = d;
+  N = d.n_frames;
+  ART_W = d.n_cols || 48;
+  ART_H = d.n_rows || 32;
+  document.getElementById('frame-slider').max = N - 1;
+
+  videoEl = document.createElement('video');
+  videoEl.src = 'chase-original.mp4';
+  videoEl.muted = true;
+  videoEl.preload = 'auto';
+  videoEl.addEventListener('loadedmetadata', () => {
+    setZoom(zoom);
+    drawFrame(0);
+  });
+});
+
+// ── Playback ──────────────────────────────────────────────────────────────────
+let pendingSeek = false;
+document.getElementById('btn-play').addEventListener('click', () => {
+  playing = !playing;
+  document.getElementById('btn-play').textContent = playing ? '⏸ Pause' : '▶ Play';
+  if (playing) tick(); else clearTimeout(playTimer);
+});
+function tick() {
+  if (!playing) return;
+  curFrame = (curFrame + 1) % N;
+  drawFrame(curFrame);
+  playTimer = setTimeout(tick, 1000 / fps);
+}
+document.getElementById('btn-slower').addEventListener('click', () => { fps = Math.max(1, fps - 2); });
+document.getElementById('btn-faster').addEventListener('click', () => { fps = Math.min(60, fps + 2); });
+document.getElementById('frame-slider').addEventListener('input', e => drawFrame(+e.target.value));
+document.getElementById('btn-prev').addEventListener('click', () => drawFrame(Math.max(0, curFrame - 1)));
+document.getElementById('btn-next').addEventListener('click', () => drawFrame(Math.min(N - 1, curFrame + 1)));
+document.getElementById('zoom-sel').addEventListener('change', e => setZoom(+e.target.value));
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft')  { e.preventDefault(); drawFrame(Math.max(0, curFrame - 1)); }
+  if (e.key === 'ArrowRight') { e.preventDefault(); drawFrame(Math.min(N - 1, curFrame + 1)); }
+  if (e.key === ' ')          { e.preventDefault(); document.getElementById('btn-play').click(); }
+});
+</script>
+</body>
+</html>
