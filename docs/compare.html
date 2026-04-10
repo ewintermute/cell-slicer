@@ -29,6 +29,7 @@ select{background:#222;color:#ccc;border:1px solid #3a3a3a;font-family:monospace
   <span><span style="color:#00C8FF">■</span> Neutrophil (mTurquoise2)</span>
   <span><span style="color:#3333FF">■</span> Leading edge (Azurite)</span>
   <span><span style="color:#AAFF00">■</span> Bacterium (Venus)</span>
+  <span><span style="color:#4747FF">■</span> Organelles (Electra2)</span>
 </div>
 
 <div class="controls">
@@ -77,6 +78,7 @@ const FP_COLORS = {
   3: '#00C8FF',      // Neutrophil        — mTurquoise2
   4: '#AAFF00',      // Bacterium         — Venus
   5: '#3333FF',      // Neutrophil lead   — Azurite
+  6: '#4747FF',      // Organelle         — Electra2
 };
 
 // ── State ─────────────────────────────────────────────────────────────────────
@@ -160,7 +162,7 @@ function drawFrame(fi) {
 }
 
 // ── Load data ─────────────────────────────────────────────────────────────────
-fetch('pixel_art_le_48x32.json').then(r => r.json()).then(d => {
+fetch('pixel_art_org_48x32.json').then(r => r.json()).then(d => {
   artData = d;
   N = d.n_frames;
   ART_W = d.n_cols || 48;
